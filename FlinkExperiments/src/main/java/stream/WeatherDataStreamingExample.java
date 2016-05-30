@@ -25,13 +25,13 @@ public class WeatherDataStreamingExample {
 
         final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-        // Use the Timestamp of the Event:
+        // Use the Measurement Timestamp of the Event:
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
-        // Path to read the data from:
+        // Path to read the CSV data from:
         final String filePath = "C:\\Users\\philipp\\Downloads\\csv\\201503hourly.txt";
 
-        // Deserialize the incoming JSON data:
+        // Add the CSV Data Source and assign the Measurement Timestamp:
         DataStream<LocalWeatherData> localWeatherDataDataStream = env
                 .addSource(new LocalWeatherDataSourceFunction(filePath))
                 .assignTimestampsAndWatermarks(new AscendingTimestampExtractor<LocalWeatherData>() {
@@ -43,7 +43,7 @@ public class WeatherDataStreamingExample {
                     }
                 });
 
-        // Now perform some Streaming analysis:
+        // Now Perform the Analysis for the daily maximum value on the Stream:
         DataStream<Tuple2<String, Float>> dailyMaxTemperature = localWeatherDataDataStream
                 .filter(new FilterFunction<LocalWeatherData>() {
                     @Override
@@ -66,7 +66,8 @@ public class WeatherDataStreamingExample {
                     }
                 });
 
-        dailyMaxTemperature.writeAsCsv("flink_data", FileSystem.WriteMode.OVERWRITE);
+        // Write the result data as CSV:
+        dailyMaxTemperature.writeAsCsv("D:\\out\\flink_data", FileSystem.WriteMode.OVERWRITE);
 
         env.execute("Max Temperature By Day example");
     }
