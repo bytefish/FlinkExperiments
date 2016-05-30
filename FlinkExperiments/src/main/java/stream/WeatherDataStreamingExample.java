@@ -3,7 +3,6 @@
 
 package stream;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import csv.model.LocalWeatherData;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.MapFunction;
@@ -22,17 +21,15 @@ import java.util.Date;
 
 public class WeatherDataStreamingExample {
 
-    public static final ObjectMapper mapper = new ObjectMapper();
-
     public static void main(String[] args) throws Exception {
 
         final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-        // Path to read the data from:
-        String filePath = "C:\\Users\\philipp\\Downloads\\csv\\201503hourly.txt";
-
         // Use the Timestamp of the Event:
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+
+        // Path to read the data from:
+        final String filePath = "C:\\Users\\philipp\\Downloads\\csv\\201503hourly.txt";
 
         // Deserialize the incoming JSON data:
         DataStream<LocalWeatherData> localWeatherDataDataStream = env
