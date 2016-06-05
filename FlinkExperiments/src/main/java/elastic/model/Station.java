@@ -4,7 +4,6 @@
 package elastic.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.elasticsearch.common.geo.GeoPoint;
 
 public class Station {
 

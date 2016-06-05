@@ -7,7 +7,6 @@ import de.bytefish.elasticutils.client.ElasticSearchClient;
 import de.bytefish.elasticutils.client.IElasticSearchClient;
 import de.bytefish.elasticutils.client.bulk.configuration.BulkProcessorConfiguration;
 import de.bytefish.elasticutils.client.bulk.options.BulkProcessingOptions;
-import de.bytefish.elasticutils.mapping.BaseElasticSearchMapping;
 import de.bytefish.elasticutils.mapping.IElasticSearchMapping;
 import de.bytefish.elasticutils.utils.ElasticSearchUtils;
 import elastic.mapping.LocalWeatherDataMapper;
@@ -18,7 +17,6 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 
 public abstract class BaseElasticSearchSink<TEntity> extends RichSinkFunction<TEntity> {

@@ -4,9 +4,9 @@
 package stream.sources;
 
 import converter.LocalWeatherDataConverter;
-import csv.model.Station;
 import csv.parser.Parsers;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
+
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
