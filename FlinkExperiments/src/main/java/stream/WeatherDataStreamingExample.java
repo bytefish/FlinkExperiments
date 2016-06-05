@@ -15,6 +15,7 @@ import org.apache.flink.streaming.api.windowing.time.Time;
 import stream.sinks.LocalWeatherDataElasticSearchSink;
 import stream.sources.LocalWeatherDataSourceFunction;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 public class WeatherDataStreamingExample {
 
@@ -57,10 +58,11 @@ public class WeatherDataStreamingExample {
                         return localWeatherData.station.wban;
                     }
                 })
-                // Create a Window with the values of 1 day:
-                .window(EventTimeSessionWindows.withGap(Time.days(1)))
-                // Use the max Temperature of these values:
+                // Create a Tumbling Window with the values of 1 day:
+                .timeWindow(Time.of(1, TimeUnit.DAYS))
+                // Use the max Temperature of the day:
                 .max("temperature")
+                // And perform an Identity map, because we want to write all values of this day to the Database:
                 .map(new MapFunction<elastic.model.LocalWeatherData, elastic.model.LocalWeatherData>() {
                     @Override
                     public elastic.model.LocalWeatherData map(elastic.model.LocalWeatherData localWeatherData) throws Exception {
@@ -68,7 +70,7 @@ public class WeatherDataStreamingExample {
                     }
                 });
 
-        // Add a new ElasticSearch Sink:
+        // Add the new ElasticSearch Sink:
         dailyMaxTemperature.addSink(new LocalWeatherDataElasticSearchSink("127.0.0.1", 9300));
 
         // Finally execute the Stream:

@@ -23,6 +23,8 @@ import java.util.concurrent.TimeUnit;
 
 public abstract class BaseElasticSearchSink<TEntity> extends RichSinkFunction<TEntity> {
 
+    private static final Object lock = new Object();
+
     private String host;
     private int port;
 
@@ -70,14 +72,18 @@ public abstract class BaseElasticSearchSink<TEntity> extends RichSinkFunction<TE
     }
 
     private void createIndex(Client client, String indexName) {
-        if(!ElasticSearchUtils.indexExist(client, indexName).isExists()) {
-            ElasticSearchUtils.createIndex(client, indexName);
+        synchronized (lock) {
+            if (!ElasticSearchUtils.indexExist(client, indexName).isExists()) {
+                ElasticSearchUtils.createIndex(client, indexName);
+            }
         }
     }
 
     private void createMapping(Client client, String indexName, IElasticSearchMapping mapping) {
-        if(ElasticSearchUtils.indexExist(client, indexName).isExists()) {
-            ElasticSearchUtils.putMapping(client, indexName, mapping);
+        synchronized (lock) {
+            if (ElasticSearchUtils.indexExist(client, indexName).isExists()) {
+                ElasticSearchUtils.putMapping(client, indexName, mapping);
+            }
         }
     }
 }
