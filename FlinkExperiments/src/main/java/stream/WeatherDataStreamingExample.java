@@ -3,20 +3,17 @@
 
 package stream;
 
-import csv.model.LocalWeatherData;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.functions.KeySelector;
-import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.core.fs.FileSystem;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.timestamps.AscendingTimestampExtractor;
 import org.apache.flink.streaming.api.windowing.assigners.EventTimeSessionWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
-import utils.DateUtils;
-
+import stream.sinks.LocalWeatherDataElasticSearchSink;
+import stream.sources.LocalWeatherDataSourceFunction;
 import java.util.Date;
 
 public class WeatherDataStreamingExample {
@@ -29,46 +26,52 @@ public class WeatherDataStreamingExample {
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
         // Path to read the CSV data from:
-        final String filePath = "C:\\Users\\philipp\\Downloads\\csv\\201503hourly.txt";
+        final String csvStationDataFilePath = "C:\\Users\\philipp\\Downloads\\csv\\201503station.txt";
+        final String csvLocalWeatherDataFilePath = "C:\\Users\\philipp\\Downloads\\csv\\201503hourly.txt";
 
         // Add the CSV Data Source and assign the Measurement Timestamp:
-        DataStream<LocalWeatherData> localWeatherDataDataStream = env
-                .addSource(new LocalWeatherDataSourceFunction(filePath))
-                .assignTimestampsAndWatermarks(new AscendingTimestampExtractor<LocalWeatherData>() {
+        DataStream<elastic.model.LocalWeatherData> localWeatherDataDataStream = env
+                .addSource(new LocalWeatherDataSourceFunction(csvStationDataFilePath, csvLocalWeatherDataFilePath))
+                .assignTimestampsAndWatermarks(new AscendingTimestampExtractor<elastic.model.LocalWeatherData>() {
                     @Override
-                    public long extractAscendingTimestamp(LocalWeatherData localWeatherData) {
-                        Date measurementDate = DateUtils.from(localWeatherData.getDate(), localWeatherData.getTime());
+                    public long extractAscendingTimestamp(elastic.model.LocalWeatherData localWeatherData) {
+                        Date measurementDate = localWeatherData.dateTime;
 
                         return measurementDate.getTime();
                     }
                 });
 
         // Now Perform the Analysis for the daily maximum value on the Stream:
-        DataStream<Tuple2<String, Float>> dailyMaxTemperature = localWeatherDataDataStream
-                .filter(new FilterFunction<LocalWeatherData>() {
+        DataStream<elastic.model.LocalWeatherData> dailyMaxTemperature = localWeatherDataDataStream
+                // Filte for Non-Null Temperature Values, because we might have missing data:
+                .filter(new FilterFunction<elastic.model.LocalWeatherData>() {
                     @Override
-                    public boolean filter(LocalWeatherData localWeatherData) throws Exception {
-                        return localWeatherData.getDryBulbCelsius() != null;
+                    public boolean filter(elastic.model.LocalWeatherData localWeatherData) throws Exception {
+                        return localWeatherData.temperature != null;
                     }
                 })
-                .keyBy(new KeySelector<LocalWeatherData, String>() {
+                // Now create the keyed stream by the Station WBAN identifier:
+                .keyBy(new KeySelector<elastic.model.LocalWeatherData, String>() {
                     @Override
-                    public String getKey(LocalWeatherData localWeatherData) throws Exception {
-                        return localWeatherData.getWban();
+                    public String getKey(elastic.model.LocalWeatherData localWeatherData) throws Exception {
+                        return localWeatherData.station.wban;
                     }
                 })
+                // Create a Window with the values of 1 day:
                 .window(EventTimeSessionWindows.withGap(Time.days(1)))
-                .max("dryBulbCelsius")
-                .map(new MapFunction<LocalWeatherData, Tuple2<String, Float>>() {
+                // Use the max Temperature of these values:
+                .max("temperature")
+                .map(new MapFunction<elastic.model.LocalWeatherData, elastic.model.LocalWeatherData>() {
                     @Override
-                    public Tuple2<String, Float> map(LocalWeatherData localWeatherData) throws Exception {
-                        return new Tuple2<String, Float>(localWeatherData.getWban(), localWeatherData.getDryBulbCelsius());
+                    public elastic.model.LocalWeatherData map(elastic.model.LocalWeatherData localWeatherData) throws Exception {
+                        return localWeatherData;
                     }
                 });
 
-        // Write the result data as CSV:
-        dailyMaxTemperature.writeAsCsv("D:\\out\\flink_data", FileSystem.WriteMode.OVERWRITE);
+        // Add a new ElasticSearch Sink:
+        dailyMaxTemperature.addSink(new LocalWeatherDataElasticSearchSink("127.0.0.1", 9300));
 
+        // Finally execute the Stream:
         env.execute("Max Temperature By Day example");
     }
 }

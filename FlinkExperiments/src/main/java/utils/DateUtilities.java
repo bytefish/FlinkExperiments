@@ -10,7 +10,7 @@ import java.time.ZoneOffset;
 import java.time.OffsetDateTime;
 import java.util.Date;
 
-public class DateUtils {
+public class DateUtilities {
 
     public static Date from(LocalDate localDate, LocalTime localTime) {
         return from(localDate, localTime, ZoneOffset.UTC);
