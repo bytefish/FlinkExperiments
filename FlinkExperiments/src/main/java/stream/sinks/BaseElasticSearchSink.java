@@ -15,24 +15,23 @@ import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.indices.IndexAlreadyExistsException;
 
 import java.net.InetAddress;
 import java.util.concurrent.TimeUnit;
 
 public abstract class BaseElasticSearchSink<TEntity> extends RichSinkFunction<TEntity> {
 
-    private static final Object lock = new Object();
+    private final String host;
+    private final int port;
 
-    private String host;
-    private int port;
-
-    private IElasticSearchClient<TEntity> client = null;
+    private IElasticSearchClient<TEntity> client;
 
     public BaseElasticSearchSink(String host, int port) {
         this.host = host;
         this.port = port;
+        this.client = null;
     }
-
 
     @Override
     public void invoke(TEntity entity) throws Exception {
@@ -42,15 +41,13 @@ public abstract class BaseElasticSearchSink<TEntity> extends RichSinkFunction<TE
     @Override
     public void open(Configuration parameters) throws Exception {
 
-        // Build the Transport Client:
-        TransportClient transportClient = TransportClient.builder().build()
-                    .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(host), port));
+        // Create the Transport Client:
+        Client transportClient = createClient();
 
-        // Create the Index and Mappings before indexing the entities:
-        createIndex(transportClient, getIndexName());
-        createMapping(transportClient, getIndexName(), getMapping());
+        // Create Index:
+        createIndexAndMapping(transportClient);
 
-        // Bulk Options for the wrapped TransportClient:
+        // Set the Bulk Options for the wrapped TransportClient:
         BulkProcessorConfiguration bulkConfiguration = new BulkProcessorConfiguration(BulkProcessingOptions.builder()
                 .setBulkActions(100)
                 .build());
@@ -59,29 +56,39 @@ public abstract class BaseElasticSearchSink<TEntity> extends RichSinkFunction<TE
         client = new ElasticSearchClient<>(transportClient, getIndexName(), new LocalWeatherDataMapper(), bulkConfiguration);
     }
 
+    @Override
+    public void close() throws Exception {
+        client.awaitClose(10, TimeUnit.SECONDS);
+    }
+
     protected abstract String getIndexName();
 
     protected abstract IElasticSearchMapping getMapping();
 
-    @Override
-    public void close() throws Exception {
-        // We give the Indexer 10 Seconds for a graceful close:
-        client.awaitClose(10, TimeUnit.SECONDS);
+    private TransportClient createClient() throws Exception{
+        return TransportClient.builder().build()
+                .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(host), port));
+    }
+
+    private void createIndexAndMapping(Client client) {
+        // Create the Index and Mappings before indexing the entities:
+        try {
+            createIndex(client, getIndexName());
+            createMapping(client, getIndexName(), getMapping());
+        } catch (IndexAlreadyExistsException e) {
+            // No need to worry. Someone else has already initialized the Elasticsearch database...
+        }
     }
 
     private void createIndex(Client client, String indexName) {
-        synchronized (lock) {
-            if (!ElasticSearchUtils.indexExist(client, indexName).isExists()) {
-                ElasticSearchUtils.createIndex(client, indexName);
-            }
+        if (!ElasticSearchUtils.indexExist(client, indexName).isExists()) {
+            ElasticSearchUtils.createIndex(client, indexName);
         }
     }
 
     private void createMapping(Client client, String indexName, IElasticSearchMapping mapping) {
-        synchronized (lock) {
-            if (ElasticSearchUtils.indexExist(client, indexName).isExists()) {
-                ElasticSearchUtils.putMapping(client, indexName, mapping);
-            }
+        if (ElasticSearchUtils.indexExist(client, indexName).isExists()) {
+            ElasticSearchUtils.putMapping(client, indexName, mapping);
         }
     }
 }
