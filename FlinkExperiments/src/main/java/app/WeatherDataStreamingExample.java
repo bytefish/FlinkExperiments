@@ -70,8 +70,8 @@ public class WeatherDataStreamingExample {
                     }
                 });
 
-        // Add the new ElasticSearch Sink:
-        dailyMaxTemperature.addSink(new LocalWeatherDataElasticSearchSink("127.0.0.1", 9300));
+        // Add a new ElasticSearch Sink:
+        dailyMaxTemperature.addSink(new LocalWeatherDataElasticSearchSink("127.0.0.1", 9300, 100));
 
         // Finally execute the Stream:
         env.execute("Max Temperature By Day example");

@@ -14,22 +14,27 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.cluster.node.DiscoveryNode;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.indices.IndexAlreadyExistsException;
 
 import java.net.InetAddress;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public abstract class BaseElasticSearchSink<TEntity> extends RichSinkFunction<TEntity> {
 
     private final String host;
     private final int port;
+    private final int bulkSize;
 
     private IElasticSearchClient<TEntity> client;
 
-    public BaseElasticSearchSink(String host, int port) {
+    public BaseElasticSearchSink(String host, int port, int bulkSize) {
         this.host = host;
         this.port = port;
+        this.bulkSize = bulkSize;
+
         this.client = null;
     }
 
@@ -42,18 +47,17 @@ public abstract class BaseElasticSearchSink<TEntity> extends RichSinkFunction<TE
     public void open(Configuration parameters) throws Exception {
 
         // Create the Transport Client:
-        Client transportClient = createClient();
+        TransportClient transportClient = createClient();
 
         // Create Index:
         createIndexAndMapping(transportClient);
 
-        // Set the Bulk Options for the wrapped TransportClient:
-        BulkProcessorConfiguration bulkConfiguration = new BulkProcessorConfiguration(BulkProcessingOptions.builder()
-                .setBulkActions(100)
-                .build());
-
         // Finally create the Client:
-        client = new ElasticSearchClient<>(transportClient, getIndexName(), new LocalWeatherDataMapper(), bulkConfiguration);
+        BulkProcessingOptions options = BulkProcessingOptions.builder()
+                .setBulkActions(bulkSize)
+                .build();
+
+        client = new ElasticSearchClient<>(transportClient, getIndexName(), new LocalWeatherDataMapper(), new BulkProcessorConfiguration(options));
     }
 
     @Override
@@ -65,9 +69,20 @@ public abstract class BaseElasticSearchSink<TEntity> extends RichSinkFunction<TE
 
     protected abstract IElasticSearchMapping getMapping();
 
-    private TransportClient createClient() throws Exception{
-        return TransportClient.builder().build()
+    private TransportClient createClient() throws Exception {
+
+        // Create a new Connection:
+        TransportClient client = TransportClient.builder().build()
                 .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(host), port));
+
+        // Ensure we have connected nodes:
+        List<DiscoveryNode> nodes = client.connectedNodes();
+
+        if (nodes.isEmpty()) {
+            throw new RuntimeException("Client is not connected to any Elasticsearch nodes!");
+        }
+
+        return client;
     }
 
     private void createIndexAndMapping(Client client) {

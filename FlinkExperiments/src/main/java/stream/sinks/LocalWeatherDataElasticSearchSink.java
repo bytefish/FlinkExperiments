@@ -3,12 +3,13 @@
 
 package stream.sinks;
 
+import de.bytefish.elasticutils.client.bulk.options.BulkProcessingOptions;
 import de.bytefish.elasticutils.mapping.IElasticSearchMapping;
 
 public class LocalWeatherDataElasticSearchSink extends BaseElasticSearchSink<elastic.model.LocalWeatherData> {
 
-    public LocalWeatherDataElasticSearchSink(String host, int port) {
-        super(host, port);
+    public LocalWeatherDataElasticSearchSink(String host, int port, int bulkSize) {
+        super(host, port, bulkSize);
     }
 
     @Override
