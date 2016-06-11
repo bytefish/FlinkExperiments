@@ -1,11 +1,10 @@
 // Copyright (c) Philipp Wagner. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-package stream.sources;
+package stream.sources.csv;
 
-import converter.LocalWeatherDataConverter;
+import stream.sources.csv.converter.LocalWeatherDataConverter;
 import csv.parser.Parsers;
-import elastic.model.LocalWeatherData;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
 
 import java.nio.charset.StandardCharsets;
@@ -16,7 +15,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class LocalWeatherDataSourceFunction implements SourceFunction<elastic.model.LocalWeatherData> {
+public class LocalWeatherDataSourceFunction implements SourceFunction<model.LocalWeatherData> {
 
     private volatile boolean isRunning = true;
 
@@ -29,17 +28,17 @@ public class LocalWeatherDataSourceFunction implements SourceFunction<elastic.mo
     }
 
     @Override
-    public void run(SourceFunction.SourceContext<elastic.model.LocalWeatherData> sourceContext) throws Exception {
+    public void run(SourceFunction.SourceContext<model.LocalWeatherData> sourceContext) throws Exception {
 
         // The Source needs to be Serializable, so we have to construct the Paths at this point:
         final Path csvStationPath = FileSystems.getDefault().getPath(stationFilePath);
         final Path csvLocalWeatherDataPath = FileSystems.getDefault().getPath(localWeatherDataFilePath);
 
         // Get the Stream of LocalWeatherData Elements in the CSV File:
-        try(Stream<elastic.model.LocalWeatherData> stream = getLocalWeatherData(csvStationPath, csvLocalWeatherDataPath)) {
+        try(Stream<model.LocalWeatherData> stream = getLocalWeatherData(csvStationPath, csvLocalWeatherDataPath)) {
 
             // We need to get an iterator, since the SourceFunction has to break out of its main loop on cancellation:
-            Iterator<elastic.model.LocalWeatherData> iterator = stream.iterator();
+            Iterator<model.LocalWeatherData> iterator = stream.iterator();
 
             // Make sure to cancel, when the Source function is canceled by an external event:
             while (isRunning && iterator.hasNext()) {
@@ -54,7 +53,7 @@ public class LocalWeatherDataSourceFunction implements SourceFunction<elastic.mo
         isRunning = false;
     }
 
-    private Stream<elastic.model.LocalWeatherData> getLocalWeatherData(Path csvStationPath, Path csvLocalWeatherDataPath) {
+    private Stream<model.LocalWeatherData> getLocalWeatherData(Path csvStationPath, Path csvLocalWeatherDataPath) {
 
         // A map between the WBAN and Station for faster Lookups:
         final Map<String, csv.model.Station> stationMap = getStationMap(csvStationPath);

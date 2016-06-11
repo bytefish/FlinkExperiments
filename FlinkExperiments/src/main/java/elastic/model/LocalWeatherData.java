@@ -26,4 +26,5 @@ public class LocalWeatherData {
 
     @JsonProperty("skyCondition")
     public String skyCondition;
+
 }

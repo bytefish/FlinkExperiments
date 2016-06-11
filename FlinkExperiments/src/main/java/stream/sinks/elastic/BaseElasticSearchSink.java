@@ -1,7 +1,7 @@
 // Copyright (c) Philipp Wagner. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-package stream.sinks;
+package stream.sinks.elastic;
 
 import de.bytefish.elasticutils.client.ElasticSearchClient;
 import de.bytefish.elasticutils.client.IElasticSearchClient;
