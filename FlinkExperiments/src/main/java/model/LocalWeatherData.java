@@ -22,6 +22,10 @@ public class LocalWeatherData {
 
     private String skyCondition;
 
+    public LocalWeatherData() {
+
+    }
+
     public LocalWeatherData(Station station, LocalDate date, LocalTime time, Float temperature, Float windSpeed, Float stationPressure, String skyCondition) {
         this.station = station;
         this.date = date;
@@ -29,6 +33,34 @@ public class LocalWeatherData {
         this.temperature = temperature;
         this.windSpeed = windSpeed;
         this.stationPressure = stationPressure;
+        this.skyCondition = skyCondition;
+    }
+
+    public void setStation(Station station) {
+        this.station = station;
+    }
+
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
+
+    public void setTime(LocalTime time) {
+        this.time = time;
+    }
+
+    public void setTemperature(Float temperature) {
+        this.temperature = temperature;
+    }
+
+    public void setWindSpeed(Float windSpeed) {
+        this.windSpeed = windSpeed;
+    }
+
+    public void setStationPressure(Float stationPressure) {
+        this.stationPressure = stationPressure;
+    }
+
+    public void setSkyCondition(String skyCondition) {
         this.skyCondition = skyCondition;
     }
 

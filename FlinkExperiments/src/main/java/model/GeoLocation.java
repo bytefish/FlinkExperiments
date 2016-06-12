@@ -9,8 +9,20 @@ public class GeoLocation {
 
     private double lon;
 
+    public GeoLocation(){
+
+    }
+
     public GeoLocation(double lat, double lon) {
         this.lat = lat;
+        this.lon = lon;
+    }
+
+    public void setLat(double lat) {
+        this.lat = lat;
+    }
+
+    public void setLon(double lon) {
         this.lon = lon;
     }
 
