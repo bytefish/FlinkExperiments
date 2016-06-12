@@ -3,9 +3,12 @@
 
 package csv.mapping;
 
+import csv.converter.IgnoreMissingValuesConverter;
 import csv.model.Station;
 import de.bytefish.jtinycsvparser.builder.IObjectCreator;
 import de.bytefish.jtinycsvparser.mapping.CsvMapping;
+import de.bytefish.jtinycsvparser.typeconverter.FloatConverter;
+import de.bytefish.jtinycsvparser.typeconverter.IntegerConverter;
 
 public class StationMapper extends CsvMapping<Station>
 {
@@ -24,9 +27,9 @@ public class StationMapper extends CsvMapping<Station>
         MapProperty(8, String.class, Station::setLocation);
         MapProperty(9, Float.class, Station::setLatitude);
         MapProperty(10, Float.class, Station::setLongitude);
-        MapProperty(11, Integer.class, Station::setGroundHeight);
-        MapProperty(12, Integer.class, Station::setStationHeight);
-        MapProperty(13, Integer.class, Station::setBarometer);
+        MapProperty(11, Integer.class, Station::setGroundHeight, new IgnoreMissingValuesConverter<>(new IntegerConverter()));
+        MapProperty(12, Integer.class, Station::setStationHeight, new IgnoreMissingValuesConverter<>(new IntegerConverter()));
+        MapProperty(13, Integer.class, Station::setBarometer, new IgnoreMissingValuesConverter<>(new IntegerConverter()));
         MapProperty(14, Integer.class, Station::setTimeZone);
     }
 }

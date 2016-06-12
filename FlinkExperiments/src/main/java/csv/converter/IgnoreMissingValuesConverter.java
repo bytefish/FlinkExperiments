@@ -10,20 +10,23 @@ import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
 
-public class IgnoreMissingValuesConverter implements ITypeConverter<Float> {
+public class IgnoreMissingValuesConverter<TTargetType> implements ITypeConverter<TTargetType> {
 
+    private ITypeConverter<TTargetType> converter;
     private List<String> missingValueRepresentation;
 
-    public IgnoreMissingValuesConverter(String... missingValueRepresentation) {
-        this(Arrays.asList(missingValueRepresentation));
+    public IgnoreMissingValuesConverter(ITypeConverter<TTargetType> converter, String... missingValueRepresentation) {
+        this(converter, Arrays.asList(missingValueRepresentation));
     }
 
-    public IgnoreMissingValuesConverter(List<String> missingValueRepresentation) {
+    public IgnoreMissingValuesConverter(ITypeConverter<TTargetType> converter, List<String> missingValueRepresentation) {
+        this.converter = converter;
         this.missingValueRepresentation = missingValueRepresentation;
+
     }
 
     @Override
-    public Float convert(final String s) {
+    public TTargetType convert(final String s) {
 
         if(StringUtils.isNullOrWhiteSpace(s)) {
             return null;
@@ -37,7 +40,7 @@ public class IgnoreMissingValuesConverter implements ITypeConverter<Float> {
             return null;
         }
 
-        return Float.parseFloat(s);
+        return converter.convert(s);
     }
 
     @Override

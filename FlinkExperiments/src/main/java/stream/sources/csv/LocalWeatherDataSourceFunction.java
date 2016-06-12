@@ -3,13 +3,17 @@
 
 package stream.sources.csv;
 
+import model.LocalWeatherData;
 import stream.sources.csv.converter.LocalWeatherDataConverter;
 import csv.parser.Parsers;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
+import utils.DateUtilities;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.time.ZoneOffset;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -44,7 +48,6 @@ public class LocalWeatherDataSourceFunction implements SourceFunction<model.Loca
             while (isRunning && iterator.hasNext()) {
                 sourceContext.collect(iterator.next());
             }
-
         }
     }
 

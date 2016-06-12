@@ -3,19 +3,30 @@
 
 package app;
 
+import model.LocalWeatherData;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.common.functions.ReduceFunction;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.functions.AssignerWithPeriodicWatermarks;
 import org.apache.flink.streaming.api.functions.timestamps.AscendingTimestampExtractor;
+import org.apache.flink.streaming.api.functions.windowing.AllWindowFunction;
+import org.apache.flink.streaming.api.functions.windowing.WindowFunction;
+import org.apache.flink.streaming.api.watermark.Watermark;
+import org.apache.flink.streaming.api.windowing.assigners.EventTimeSessionWindows;
+import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
+import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
+import org.apache.flink.util.Collector;
 import stream.sinks.elastic.LocalWeatherDataElasticSearchSink;
 import stream.sinks.pgsql.LocalWeatherDataPostgresSink;
 import stream.sources.csv.LocalWeatherDataSourceFunction;
 import utils.DateUtilities;
 
+import javax.annotation.Nullable;
 import java.net.URI;
 import java.time.ZoneOffset;
 import java.util.Date;
@@ -37,9 +48,15 @@ public class WeatherDataStreamingExample {
         // Add the CSV Data Source and assign the Measurement Timestamp:
         DataStream<model.LocalWeatherData> localWeatherDataDataStream = env
                 .addSource(new LocalWeatherDataSourceFunction(csvStationDataFilePath, csvLocalWeatherDataFilePath))
-                .assignTimestampsAndWatermarks(new AscendingTimestampExtractor<model.LocalWeatherData>() {
+                .assignTimestampsAndWatermarks(new AssignerWithPeriodicWatermarks<LocalWeatherData>() {
+                    @Nullable
                     @Override
-                    public long extractAscendingTimestamp(model.LocalWeatherData localWeatherData) {
+                    public Watermark getCurrentWatermark() {
+                        return null;
+                    }
+
+                    @Override
+                    public long extractTimestamp(LocalWeatherData localWeatherData, long l) {
                         // Get the ZoneOffset of the Station, where the Measurement was collected in:
                         ZoneOffset zoneOffset = ZoneOffset.ofHours(localWeatherData.getStation().getTimeZone());
                         // Get the Date of the Measurement, which has to take the ZoneOffset into account:
@@ -52,21 +69,20 @@ public class WeatherDataStreamingExample {
         // Now Perform the Analysis for the daily maximum value on the Stream:
         DataStream<model.LocalWeatherData> dailyMaxTemperature = localWeatherDataDataStream
                 // Filte for Non-Null Temperature Values, because we might have missing data:
-                .filter(new FilterFunction<model.LocalWeatherData>() {
+                .filter(new FilterFunction<LocalWeatherData>() {
                     @Override
-                    public boolean filter(model.LocalWeatherData localWeatherData) throws Exception {
+                    public boolean filter(LocalWeatherData localWeatherData) throws Exception {
                         return localWeatherData.getTemperature() != null;
                     }
                 })
                 // Now create the keyed stream by the Station WBAN identifier:
-                .keyBy(new KeySelector<model.LocalWeatherData, String>() {
+                .keyBy(new KeySelector<LocalWeatherData, String>() {
                     @Override
-                    public String getKey(model.LocalWeatherData localWeatherData) throws Exception {
+                    public String getKey(LocalWeatherData localWeatherData) throws Exception {
                         return localWeatherData.getStation().getWban();
                     }
                 })
-                // Create a Tumbling Window with the values of 1 day:
-                .timeWindow(Time.of(1, TimeUnit.DAYS))
+                .timeWindow(Time.days(1))
                 // Use the max Temperature of the day:
                 .max("temperature")
                 // And perform an Identity map, because we want to write all values of this day to the Database:
@@ -97,10 +113,10 @@ public class WeatherDataStreamingExample {
 
 
         // Add a new ElasticSearch Sink:
-        elasticDailyMaxTemperature.addSink(new LocalWeatherDataElasticSearchSink("127.0.0.1", 9300, 100));
+        //elasticDailyMaxTemperature.addSink(new LocalWeatherDataElasticSearchSink("127.0.0.1", 9300, 100));
 
         // Add a new Postgres Sink:
-        pgsqlDailyMaxTemperature.addSink(new LocalWeatherDataPostgresSink(URI.create("postgres://philipp:test_pwd@127.0.0.1:5432/sampledb"), 10000));
+        pgsqlDailyMaxTemperature.addSink(new LocalWeatherDataPostgresSink(URI.create("postgres://philipp:test_pwd@127.0.0.1:5432/sampledb"), 1000));
 
         // Finally execute the Stream:
         env.execute("Max Temperature By Day example");
