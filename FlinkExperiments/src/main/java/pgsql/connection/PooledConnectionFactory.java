@@ -4,14 +4,12 @@
 package pgsql.connection;
 
 import de.bytefish.pgbulkinsert.functional.Func1;
-import de.bytefish.pgbulkinsert.util.PostgreSqlUtils;
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.postgresql.PGConnection;
 
 import java.net.URI;
 import java.sql.Connection;
 
-public class PooledConnectionFactory implements Func1<PGConnection> {
+public class PooledConnectionFactory implements Func1<Connection> {
 
     private final BasicDataSource connectionPool;
 
@@ -34,10 +32,7 @@ public class PooledConnectionFactory implements Func1<PGConnection> {
     }
 
     @Override
-    public PGConnection invoke() throws Exception {
-        final Connection connection = connectionPool.getConnection();
-
-        return PostgreSqlUtils.getPGConnection(connection);
+    public Connection invoke() throws Exception {
+        return connectionPool.getConnection();
     }
-
 }

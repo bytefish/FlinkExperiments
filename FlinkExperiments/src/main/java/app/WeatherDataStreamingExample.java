@@ -100,7 +100,7 @@ public class WeatherDataStreamingExample {
         elasticDailyMaxTemperature.addSink(new LocalWeatherDataElasticSearchSink("127.0.0.1", 9300, 100));
 
         // Add a new Postgres Sink:
-        pgsqlDailyMaxTemperature.addSink(new LocalWeatherDataPostgresSink(URI.create("postgres://philipp:test_pwd@127.0.0.1:5432/sampledb"), 100));
+        pgsqlDailyMaxTemperature.addSink(new LocalWeatherDataPostgresSink(URI.create("postgres://philipp:test_pwd@127.0.0.1:5432/sampledb"), 10000));
 
         // Finally execute the Stream:
         env.execute("Max Temperature By Day example");

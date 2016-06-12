@@ -5,6 +5,7 @@ package stream.sinks.pgsql;
 
 import de.bytefish.pgbulkinsert.IPgBulkInsert;
 import de.bytefish.pgbulkinsert.pgsql.processor.BulkProcessor;
+import de.bytefish.pgbulkinsert.pgsql.processor.handler.BulkWriteHandler;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import pgsql.connection.PooledConnectionFactory;
@@ -30,7 +31,7 @@ public abstract class BasePostgresSink<TEntity> extends RichSinkFunction<TEntity
 
     @Override
     public void open(Configuration parameters) throws Exception {
-        this.bulkProcessor = new BulkProcessor<>(getBulkInsert(), new PooledConnectionFactory(databaseUri), bulkSize);
+        this.bulkProcessor = new BulkProcessor<>(new BulkWriteHandler<>(getBulkInsert(), new PooledConnectionFactory(databaseUri)), bulkSize);
     }
 
     @Override
