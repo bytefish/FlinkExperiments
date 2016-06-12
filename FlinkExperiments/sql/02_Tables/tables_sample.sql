@@ -38,8 +38,7 @@ CREATE TABLE sample.weather_data
 	temperature REAL,
 	windSpeed REAL,
 	stationPressure REAL,
-	skyCondition VARCHAR(255),
-	
+	skyCondition VARCHAR(255)	
 );
 
 END IF;
