@@ -6,23 +6,19 @@ package csv.sorting;
 import csv.model.Station;
 import csv.parser.Parsers;
 import de.bytefish.jtinycsvparser.mapping.CsvMappingResult;
-import de.bytefish.jtinycsvparser.utils.StringUtils;
-import model.LocalWeatherData;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import scala.Int;
-import stream.sources.csv.converter.LocalWeatherDataConverter;
 
 import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -45,12 +41,13 @@ public class PrepareWeatherData {
         // Comparator for sorting the File:
         Comparator<OffsetDateTime> byMeasurementTime = (e1, e2) -> e1.compareTo(e2);
 
-
         // Get the sorted indices from the stream of LocalWeatherData Elements:
         try (Stream<CsvMappingResult<csv.model.LocalWeatherData>> stream = getLocalWeatherData(csvLocalWeatherDataFilePath)) {
 
+            // Holds the current line index, when processing the input Stream:
             AtomicInteger currentIndex = new AtomicInteger(1);
 
+            // We want to get a list of indices, which sorts the CSV file by measurement time:
             indices = stream
                     // Skip the CSV Header:
                     .skip(1)
@@ -77,6 +74,7 @@ public class PrepareWeatherData {
                     .map(x -> x.getLeft())
                     // And turn it into a List:
                     .collect(Collectors.toList());
+
         }
 
         // Now sorts the File by Line Number:
@@ -89,12 +87,13 @@ public class PrepareWeatherData {
         try {
             List<String> csvDataList = new ArrayList<>();
 
-            // Read the CSV data with skipping the first line:
+            // This is sorting for the dumb (like me). Read the entire CSV file, skipping the first line:
             try (Stream<String> lines = Files.lines(csvFileIn, StandardCharsets.US_ASCII).skip(1))
             {
                 csvDataList = lines.collect(Collectors.toList());
             }
 
+            // Now write the sorted file:
             try(BufferedWriter writer = Files.newBufferedWriter(csvFileOut)) {
                 for (Integer index : indices) {
                     writer.write(csvDataList.get(index));
