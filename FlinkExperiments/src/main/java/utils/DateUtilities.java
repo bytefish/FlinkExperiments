@@ -23,9 +23,9 @@ public class DateUtilities {
     }
 
     public static Date from(LocalDateTime localDateTime, ZoneOffset zoneOffset) {
-        OffsetDateTime zdt = localDateTime.atOffset(zoneOffset);
+        OffsetDateTime offsetDateTime = localDateTime.atOffset(zoneOffset);
 
-        return Date.from(zdt.toInstant());
+        return Date.from(offsetDateTime.toInstant());
     }
 
 }

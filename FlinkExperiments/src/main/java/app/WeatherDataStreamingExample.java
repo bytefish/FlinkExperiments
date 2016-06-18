@@ -9,9 +9,13 @@ import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.ReduceFunction;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.streaming.api.TimeCharacteristic;
+import org.apache.flink.streaming.api.collector.selector.OutputSelector;
 import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.datastream.KeyedStream;
+import org.apache.flink.streaming.api.datastream.SplitStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.AssignerWithPeriodicWatermarks;
+import org.apache.flink.streaming.api.functions.IngestionTimeExtractor;
 import org.apache.flink.streaming.api.functions.timestamps.AscendingTimestampExtractor;
 import org.apache.flink.streaming.api.functions.windowing.AllWindowFunction;
 import org.apache.flink.streaming.api.functions.windowing.WindowFunction;
@@ -40,34 +44,26 @@ public class WeatherDataStreamingExample {
 
         // Use the Measurement Timestamp of the Event:
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+        env.setParallelism(1);
 
         // Path to read the CSV data from:
         final String csvStationDataFilePath = "C:\\Users\\philipp\\Downloads\\csv\\201503station.txt";
-        final String csvLocalWeatherDataFilePath = "C:\\Users\\philipp\\Downloads\\csv\\201503hourly.txt";
+        final String csvLocalWeatherDataFilePath = "C:\\Users\\philipp\\Downloads\\csv\\201503hourly_sorted.txt";
 
         // Add the CSV Data Source and assign the Measurement Timestamp:
         DataStream<model.LocalWeatherData> localWeatherDataDataStream = env
                 .addSource(new LocalWeatherDataSourceFunction(csvStationDataFilePath, csvLocalWeatherDataFilePath))
-                .assignTimestampsAndWatermarks(new AssignerWithPeriodicWatermarks<LocalWeatherData>() {
-                    @Nullable
+                .assignTimestampsAndWatermarks(new AscendingTimestampExtractor<LocalWeatherData>() {
                     @Override
-                    public Watermark getCurrentWatermark() {
-                        return null;
-                    }
+                    public long extractAscendingTimestamp(LocalWeatherData localWeatherData) {
+                        Date measurementTime = DateUtilities.from(localWeatherData.getDate(), localWeatherData.getTime(), ZoneOffset.ofHours(localWeatherData.getStation().getTimeZone()));
 
-                    @Override
-                    public long extractTimestamp(LocalWeatherData localWeatherData, long l) {
-                        // Get the ZoneOffset of the Station, where the Measurement was collected in:
-                        ZoneOffset zoneOffset = ZoneOffset.ofHours(localWeatherData.getStation().getTimeZone());
-                        // Get the Date of the Measurement, which has to take the ZoneOffset into account:
-                        Date measurementDate = DateUtilities.from(localWeatherData.getDate(), localWeatherData.getTime(), zoneOffset);
-                        // And return the Milliseconds of this measurement:
-                        return measurementDate.getTime();
+                        return measurementTime.getTime();
                     }
                 });
 
-        // Now Perform the Analysis for the daily maximum value on the Stream:
-        DataStream<model.LocalWeatherData> dailyMaxTemperature = localWeatherDataDataStream
+        // First build a KeyedStream over the Data with LocalWeather:
+        KeyedStream<LocalWeatherData, String> localWeatherDataByStation = localWeatherDataDataStream
                 // Filte for Non-Null Temperature Values, because we might have missing data:
                 .filter(new FilterFunction<LocalWeatherData>() {
                     @Override
@@ -81,20 +77,18 @@ public class WeatherDataStreamingExample {
                     public String getKey(LocalWeatherData localWeatherData) throws Exception {
                         return localWeatherData.getStation().getWban();
                     }
-                })
-                .timeWindow(Time.days(1))
-                // Use the max Temperature of the day:
-                .max("temperature")
-                // And perform an Identity map, because we want to write all values of this day to the Database:
-                .map(new MapFunction<model.LocalWeatherData, model.LocalWeatherData>() {
-                    @Override
-                    public model.LocalWeatherData map(model.LocalWeatherData localWeatherData) throws Exception {
-                        return localWeatherData;
-                    }
                 });
 
+        // Now take the Maximum Temperature per day from the KeyedStream:
+        DataStream<LocalWeatherData> maxTemperaturePerDay =
+                localWeatherDataByStation
+                        // Use non-overlapping tumbling window with 1 day length:
+                        .timeWindow(Time.days(1))
+                        // And use the maximum temperature:
+                        .maxBy("temperature");
+
         // Converts the general stream into the Elasticsearch specific representation with JsonAttributes:
-        DataStream<elastic.model.LocalWeatherData> elasticDailyMaxTemperature = dailyMaxTemperature
+        DataStream<elastic.model.LocalWeatherData> elasticDailyMaxTemperature = maxTemperaturePerDay
                 .map(new MapFunction<model.LocalWeatherData, elastic.model.LocalWeatherData>() {
                     @Override
                     public elastic.model.LocalWeatherData map(model.LocalWeatherData localWeatherData) throws Exception {
@@ -103,7 +97,7 @@ public class WeatherDataStreamingExample {
                 });
 
         // Converts the general stream into the Postgres-specific representation:
-        DataStream<pgsql.model.LocalWeatherData> pgsqlDailyMaxTemperature = dailyMaxTemperature
+        DataStream<pgsql.model.LocalWeatherData> pgsqlDailyMaxTemperature = maxTemperaturePerDay
                 .map(new MapFunction<model.LocalWeatherData, pgsql.model.LocalWeatherData>() {
                     @Override
                     public pgsql.model.LocalWeatherData map(model.LocalWeatherData localWeatherData) throws Exception {
