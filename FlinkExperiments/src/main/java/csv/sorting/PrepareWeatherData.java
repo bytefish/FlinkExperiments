@@ -29,7 +29,7 @@ public class PrepareWeatherData {
 
         // Path to read the CSV data from:
         final Path csvStationDataFilePath = FileSystems.getDefault().getPath("C:\\Users\\philipp\\Downloads\\csv\\201503station.txt");
-        final Path csvLocalWeatherDataFilePath = FileSystems.getDefault().getPath("C:\\Users\\philipp\\Downloads\\csv\\201503hourly.txt");
+        final Path csvLocalWeatherDataUnsortedFilePath = FileSystems.getDefault().getPath("C:\\Users\\philipp\\Downloads\\csv\\201503hourly.txt");
         final Path csvLocalWeatherDataSortedFilePath = FileSystems.getDefault().getPath("C:\\Users\\philipp\\Downloads\\csv\\201503hourly_sorted.txt");
 
         // A map between the WBAN and Station for faster Lookups:
@@ -42,7 +42,7 @@ public class PrepareWeatherData {
         Comparator<OffsetDateTime> byMeasurementTime = (e1, e2) -> e1.compareTo(e2);
 
         // Get the sorted indices from the stream of LocalWeatherData Elements:
-        try (Stream<CsvMappingResult<csv.model.LocalWeatherData>> stream = getLocalWeatherData(csvLocalWeatherDataFilePath)) {
+        try (Stream<CsvMappingResult<csv.model.LocalWeatherData>> stream = getLocalWeatherData(csvLocalWeatherDataUnsortedFilePath)) {
 
             // Holds the current line index, when processing the input Stream:
             AtomicInteger currentIndex = new AtomicInteger(1);
@@ -74,11 +74,10 @@ public class PrepareWeatherData {
                     .map(x -> x.getLeft())
                     // And turn it into a List:
                     .collect(Collectors.toList());
-
         }
 
         // Now sorts the File by Line Number:
-        writeSortedFileByIndices(csvLocalWeatherDataFilePath, indices, csvLocalWeatherDataSortedFilePath);
+        writeSortedFileByIndices(csvLocalWeatherDataUnsortedFilePath, indices, csvLocalWeatherDataSortedFilePath);
     }
 
 
