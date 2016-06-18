@@ -5,6 +5,7 @@ package csv.sorting;
 
 import csv.model.Station;
 import csv.parser.Parsers;
+import de.bytefish.jtinycsvparser.mapping.CsvMappingResult;
 import de.bytefish.jtinycsvparser.utils.StringUtils;
 import model.LocalWeatherData;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -35,21 +36,46 @@ public class PrepareWeatherData {
         final Path csvLocalWeatherDataFilePath = FileSystems.getDefault().getPath("C:\\Users\\philipp\\Downloads\\csv\\201503hourly.txt");
         final Path csvLocalWeatherDataSortedFilePath = FileSystems.getDefault().getPath("C:\\Users\\philipp\\Downloads\\csv\\201503hourly_sorted.txt");
 
-        Comparator<OffsetDateTime> byMeasurementTime = (e1, e2) -> e1.compareTo(e2);
+        // A map between the WBAN and Station for faster Lookups:
+        final Map<String, Station> stationMap = getStationMap(csvStationDataFilePath);
 
         // Holds the List of Sorted DateTimes (including ZoneOffset):
         List<Integer> indices = new ArrayList<>();
 
-        // Get the sorted indices from the stream of LocalWeatherData Elements:
-        try (Stream<LocalWeatherData> stream = getLocalWeatherData(csvStationDataFilePath, csvLocalWeatherDataFilePath)) {
+        // Comparator for sorting the File:
+        Comparator<OffsetDateTime> byMeasurementTime = (e1, e2) -> e1.compareTo(e2);
 
-            AtomicInteger currentIndex = new AtomicInteger(0);
+
+        // Get the sorted indices from the stream of LocalWeatherData Elements:
+        try (Stream<CsvMappingResult<csv.model.LocalWeatherData>> stream = getLocalWeatherData(csvLocalWeatherDataFilePath)) {
+
+            AtomicInteger currentIndex = new AtomicInteger(1);
 
             indices = stream
-                    .map(x -> OffsetDateTime.of(x.getDate(), x.getTime(), ZoneOffset.ofHours(x.getStation().getTimeZone())))
+                    // Skip the CSV Header:
+                    .skip(1)
+                    // Start by enumerating ALL mapping results:
                     .map(x -> new ImmutablePair<>(currentIndex.getAndAdd(1), x))
+                    // Then only take those lines, that are actually valid:
+                    .filter(x -> x.getRight().isValid())
+                    // Now take the parsed entity from the CsvMappingResult:
+                    .map(x -> new ImmutablePair<>(x.getLeft(), x.getRight().getResult()))
+                    // Take only those measurements, that are also available in the list of stations:
+                    .filter(x -> stationMap.containsKey(x.getRight().getWban()))
+                    // Get the OffsetDateTime from the LocalWeatherData, which includes the ZoneOffset of the Station:
+                    .map(x -> {
+                        // Get the matching station:
+                        csv.model.Station station = stationMap.get(x.getRight().getWban());
+                        // Calculate the OffsetDateTime from the given measurement:
+                        OffsetDateTime measurementTime = OffsetDateTime.of(x.getRight().getDate(), x.getRight().getTime(), ZoneOffset.ofHours(station.getTimeZone()));
+                        // Build the Immutable pair with the Index again:
+                        return new ImmutablePair<>(x.getLeft(), measurementTime);
+                    })
+                    // Now sort the Measurements by their Timestamp:
                     .sorted((x, y) -> byMeasurementTime.compare(x.getRight(), y.getRight()))
+                    // Take only the Index:
                     .map(x -> x.getLeft())
+                    // And turn it into a List:
                     .collect(Collectors.toList());
         }
 
@@ -57,11 +83,14 @@ public class PrepareWeatherData {
         writeSortedFileByIndices(csvLocalWeatherDataFilePath, indices, csvLocalWeatherDataSortedFilePath);
     }
 
+
+
     private static void writeSortedFileByIndices(Path csvFileIn, List<Integer> indices, Path csvFileOut) {
         try {
             List<String> csvDataList = new ArrayList<>();
 
-            try (Stream<String> lines = Files.lines(csvFileIn, StandardCharsets.US_ASCII))
+            // Read the CSV data with skipping the first line:
+            try (Stream<String> lines = Files.lines(csvFileIn, StandardCharsets.US_ASCII).skip(1))
             {
                 csvDataList = lines.collect(Collectors.toList());
             }
@@ -78,28 +107,8 @@ public class PrepareWeatherData {
         }
     }
 
-    private static Stream<model.LocalWeatherData> getLocalWeatherData(Path csvStationPath, Path csvLocalWeatherDataPath) {
-
-        // A map between the WBAN and Station for faster Lookups:
-        final Map<String, Station> stationMap = getStationMap(csvStationPath);
-
-        // Turns the Stream of CSV data into the Elasticsearch representation:
-        return getLocalWeatherData(csvLocalWeatherDataPath)
-                // Only use Measurements with a Station:
-                .filter(x -> stationMap.containsKey(x.getWban()))
-                // And turn the Station and LocalWeatherData into the ElasticSearch representation:
-                .map(x -> {
-                    // First get the matching Station:
-                    csv.model.Station station = stationMap.get(x.getWban());
-                    // Convert to the Elastic Representation:
-                    return LocalWeatherDataConverter.convert(x, station);
-                });
-    }
-
-    private static Stream<csv.model.LocalWeatherData> getLocalWeatherData(Path path) {
-        return Parsers.LocalWeatherDataParser().readFromFile(path, StandardCharsets.US_ASCII)
-                .filter(x -> x.isValid())
-                .map(x -> x.getResult());
+    private static Stream<CsvMappingResult<csv.model.LocalWeatherData>> getLocalWeatherData(Path path) {
+        return Parsers.LocalWeatherDataParser().readFromFile(path, StandardCharsets.US_ASCII);
     }
 
     private static Stream<csv.model.Station> getStations(Path path) {
