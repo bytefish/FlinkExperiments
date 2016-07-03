@@ -9,7 +9,7 @@ public class GeoLocation {
 
     private double lon;
 
-    public GeoLocation(){
+    public GeoLocation() {
 
     }
 

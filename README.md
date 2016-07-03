@@ -18,8 +18,6 @@ The data is available at:
 
 * [http://www.ncdc.noaa.gov/orders/qclcd/](http://www.ncdc.noaa.gov/orders/qclcd/)
 
-
-
 [Apache Flink]: https://flink.apache.org
 [Elasticsearch]: https://www.elastic.co/products/elasticsearch 
 [PostgreSQL]: https://www.postgresql.org

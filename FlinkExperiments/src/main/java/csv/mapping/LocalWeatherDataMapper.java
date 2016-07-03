@@ -21,12 +21,12 @@ public class LocalWeatherDataMapper extends CsvMapping<LocalWeatherData>
     {
         super(creator);
 
-        MapProperty(0, String.class, LocalWeatherData::setWban);
-        MapProperty(1, LocalDate.class, LocalWeatherData::setDate, new LocalDateConverter(DateTimeFormatter.ofPattern("yyyyMMdd")));
-        MapProperty(2, LocalTime.class, LocalWeatherData::setTime, new LocalTimeConverter(DateTimeFormatter.ofPattern("HHmm")));
-        MapProperty(4, String.class, LocalWeatherData::setSkyCondition);
-        MapProperty(12, Float.class, LocalWeatherData::setDryBulbCelsius, new IgnoreMissingValuesConverter<>(new FloatConverter(), "M"));
-        MapProperty(24, Float.class, LocalWeatherData::setWindSpeed, new IgnoreMissingValuesConverter<>(new FloatConverter(), "M"));
-        MapProperty(30, Float.class, LocalWeatherData::setStationPressure, new IgnoreMissingValuesConverter<>(new FloatConverter(), "M"));
+        mapProperty(0, String.class, LocalWeatherData::setWban);
+        mapProperty(1, LocalDate.class, LocalWeatherData::setDate, new LocalDateConverter(DateTimeFormatter.ofPattern("yyyyMMdd")));
+        mapProperty(2, LocalTime.class, LocalWeatherData::setTime, new LocalTimeConverter(DateTimeFormatter.ofPattern("HHmm")));
+        mapProperty(4, String.class, LocalWeatherData::setSkyCondition);
+        mapProperty(12, Float.class, LocalWeatherData::setDryBulbCelsius, new IgnoreMissingValuesConverter<>(new FloatConverter(), "M"));
+        mapProperty(24, Float.class, LocalWeatherData::setWindSpeed, new IgnoreMissingValuesConverter<>(new FloatConverter(), "M"));
+        mapProperty(30, Float.class, LocalWeatherData::setStationPressure, new IgnoreMissingValuesConverter<>(new FloatConverter(), "M"));
     }
 }

@@ -16,20 +16,20 @@ public class StationMapper extends CsvMapping<Station>
     {
         super(creator);
 
-        MapProperty(0, String.class, Station::setWban);
-        MapProperty(1, String.class, Station::setWmo);
-        MapProperty(2, String.class, Station::setCallSign);
-        MapProperty(3, String.class, Station::setClimateDivisionCode);
-        MapProperty(4, String.class, Station::setClimateDivisionStateCode);
-        MapProperty(5, String.class, Station::setClimateDivisionStationCode);
-        MapProperty(6, String.class, Station::setName);
-        MapProperty(7, String.class, Station::setState);
-        MapProperty(8, String.class, Station::setLocation);
-        MapProperty(9, Float.class, Station::setLatitude);
-        MapProperty(10, Float.class, Station::setLongitude);
-        MapProperty(11, Integer.class, Station::setGroundHeight, new IgnoreMissingValuesConverter<>(new IntegerConverter()));
-        MapProperty(12, Integer.class, Station::setStationHeight, new IgnoreMissingValuesConverter<>(new IntegerConverter()));
-        MapProperty(13, Integer.class, Station::setBarometer, new IgnoreMissingValuesConverter<>(new IntegerConverter()));
-        MapProperty(14, Integer.class, Station::setTimeZone);
+        mapProperty(0, String.class, Station::setWban);
+        mapProperty(1, String.class, Station::setWmo);
+        mapProperty(2, String.class, Station::setCallSign);
+        mapProperty(3, String.class, Station::setClimateDivisionCode);
+        mapProperty(4, String.class, Station::setClimateDivisionStateCode);
+        mapProperty(5, String.class, Station::setClimateDivisionStationCode);
+        mapProperty(6, String.class, Station::setName);
+        mapProperty(7, String.class, Station::setState);
+        mapProperty(8, String.class, Station::setLocation);
+        mapProperty(9, Float.class, Station::setLatitude);
+        mapProperty(10, Float.class, Station::setLongitude);
+        mapProperty(11, Integer.class, Station::setGroundHeight, new IgnoreMissingValuesConverter<>(new IntegerConverter()));
+        mapProperty(12, Integer.class, Station::setStationHeight, new IgnoreMissingValuesConverter<>(new IntegerConverter()));
+        mapProperty(13, Integer.class, Station::setBarometer, new IgnoreMissingValuesConverter<>(new IntegerConverter()));
+        mapProperty(14, Integer.class, Station::setTimeZone);
     }
 }

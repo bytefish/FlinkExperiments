@@ -12,10 +12,6 @@ import java.util.Date;
 
 public class DateUtilities {
 
-    public static Date from(LocalDate localDate, LocalTime localTime) {
-        return from(localDate, localTime, ZoneOffset.UTC);
-    }
-
     public static Date from(LocalDate localDate, LocalTime localTime, ZoneOffset zoneOffset) {
         LocalDateTime localDateTime = localDate.atTime(localTime);
 

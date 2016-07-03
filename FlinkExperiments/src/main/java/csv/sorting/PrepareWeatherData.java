@@ -91,7 +91,6 @@ public class PrepareWeatherData {
             {
                 csvDataList = lines.collect(Collectors.toList());
             }
-
             // Now write the sorted file:
             try(BufferedWriter writer = Files.newBufferedWriter(csvFileOut)) {
                 for (Integer index : indices) {
@@ -99,7 +98,6 @@ public class PrepareWeatherData {
                     writer.newLine();
                 }
             }
-
         } catch(Exception e) {
             throw new RuntimeException(e);
         }
