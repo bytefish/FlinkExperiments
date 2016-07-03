@@ -3,11 +3,10 @@
 
 package csv.mapping;
 
-import csv.converter.IgnoreMissingValuesConverter;
 import csv.model.Station;
 import de.bytefish.jtinycsvparser.builder.IObjectCreator;
 import de.bytefish.jtinycsvparser.mapping.CsvMapping;
-import de.bytefish.jtinycsvparser.typeconverter.FloatConverter;
+import de.bytefish.jtinycsvparser.typeconverter.IgnoreMissingValuesConverter;
 import de.bytefish.jtinycsvparser.typeconverter.IntegerConverter;
 
 public class StationMapper extends CsvMapping<Station>

@@ -3,11 +3,11 @@
 
 package csv.mapping;
 
-import csv.converter.IgnoreMissingValuesConverter;
 import csv.model.LocalWeatherData;
 import de.bytefish.jtinycsvparser.builder.IObjectCreator;
 import de.bytefish.jtinycsvparser.mapping.CsvMapping;
 import de.bytefish.jtinycsvparser.typeconverter.FloatConverter;
+import de.bytefish.jtinycsvparser.typeconverter.IgnoreMissingValuesConverter;
 import de.bytefish.jtinycsvparser.typeconverter.LocalDateConverter;
 import de.bytefish.jtinycsvparser.typeconverter.LocalTimeConverter;
 
