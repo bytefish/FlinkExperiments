@@ -13,8 +13,10 @@ import org.apache.flink.cep.PatternSelectFunction;
 import org.apache.flink.cep.PatternStream;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.timestamps.AscendingTimestampExtractor;
+import org.apache.flink.streaming.api.windowing.time.Time;
 import stream.sources.csv.LocalWeatherDataSourceFunction;
 import utils.DateUtilities;
 
@@ -38,8 +40,9 @@ public class WeatherDataComplexEventProcessingExample {
         final String csvStationDataFilePath = "C:\\Users\\philipp\\Downloads\\csv\\201503station.txt";
         final String csvLocalWeatherDataFilePath = "C:\\Users\\philipp\\Downloads\\csv\\201503hourly_sorted.txt";
 
+
         // Add the CSV Data Source and assign the Measurement Timestamp:
-        DataStream<LocalWeatherData> localWeatherDataDataStream = env
+        DataStream<model.LocalWeatherData> localWeatherDataDataStream = env
                 .addSource(new LocalWeatherDataSourceFunction(csvStationDataFilePath, csvLocalWeatherDataFilePath))
                 .assignTimestampsAndWatermarks(new AscendingTimestampExtractor<LocalWeatherData>() {
                     @Override
@@ -48,19 +51,38 @@ public class WeatherDataComplexEventProcessingExample {
 
                         return measurementTime.getTime();
                     }
-                })
+                });
+
+        // First build a KeyedStream over the Data with LocalWeather:
+        KeyedStream<LocalWeatherData, String> localWeatherDataByStation = localWeatherDataDataStream
+                // Filte for Non-Null Temperature Values, because we might have missing data:
                 .filter(new FilterFunction<LocalWeatherData>() {
                     @Override
                     public boolean filter(LocalWeatherData localWeatherData) throws Exception {
                         return localWeatherData.getTemperature() != null;
                     }
+                })
+                // Now create the keyed stream by the Station WBAN identifier:
+                .keyBy(new KeySelector<LocalWeatherData, String>() {
+                    @Override
+                    public String getKey(LocalWeatherData localWeatherData) throws Exception {
+                        return localWeatherData.getStation().getWban();
+                    }
                 });
+
+        // Now take the Maximum Temperature per day from the KeyedStream:
+        DataStream<LocalWeatherData> maxTemperaturePerDay =
+                localWeatherDataByStation
+                        // Use non-overlapping tumbling window with 1 day length:
+                        .timeWindow(Time.days(1))
+                        // And use the maximum temperature:
+                        .maxBy("temperature");
 
         // Example Excessive Heat Warning:
         final ExcessiveHeatWarningPattern pattern = new ExcessiveHeatWarningPattern();
 
         PatternStream<LocalWeatherData> tempPatternStream = CEP.pattern(
-                localWeatherDataDataStream.keyBy(new KeySelector<LocalWeatherData, String>() {
+                maxTemperaturePerDay.keyBy(new KeySelector<LocalWeatherData, String>() {
                     @Override
                     public String getKey(LocalWeatherData localWeatherData) throws Exception {
                         return localWeatherData.getStation().getWban();
