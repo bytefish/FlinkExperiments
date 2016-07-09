@@ -75,6 +75,8 @@ public class WeatherDataComplexEventProcessingExample {
             }
         });
 
+        warnings.print();
+
        // Finally execute the Stream:
         env.execute("CEP Weather Warning Example");
     }
