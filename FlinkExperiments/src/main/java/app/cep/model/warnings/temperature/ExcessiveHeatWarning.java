@@ -33,4 +33,16 @@ public class ExcessiveHeatWarning implements IWarning {
         return localWeatherData1;
     }
 
+    @Override
+    public String toString() {
+        return String.format("ExcessiveHeatWarning (First Measurement = (%s), Second Measurement = (%s))",
+                getEventSummary(localWeatherData0),
+                getEventSummary(localWeatherData1));
+    }
+
+    private String getEventSummary(LocalWeatherData localWeatherData) {
+
+        return String.format("Date = %s, Time = %s, Temperature = %d",
+                localWeatherData.getDate(), localWeatherData.getTime(), localWeatherData.getTemperature());
+    }
 }

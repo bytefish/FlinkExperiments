@@ -18,4 +18,16 @@ public class HighWindWarning implements IWarning {
         return localWeatherData;
     }
 
+    @Override
+    public String toString() {
+        return String.format("HighWindWarning (First Measurement = (%s))",
+                getEventSummary(localWeatherData));
+    }
+
+    private String getEventSummary(LocalWeatherData localWeatherData) {
+
+        return String.format("Date = %s, Time = %s, WindSpeed = %d",
+                localWeatherData.getDate(), localWeatherData.getTime(), localWeatherData.getWindSpeed());
+    }
+
 }
