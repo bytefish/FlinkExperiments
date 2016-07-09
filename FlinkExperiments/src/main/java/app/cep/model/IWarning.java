@@ -3,6 +3,9 @@
 
 package app.cep.model;
 
+/**
+ * Marker interface used for Warnings.
+ */
 public interface IWarning {
 
 }
