@@ -41,4 +41,9 @@ public class ExcessiveHeatWarningPattern implements IWarningPattern<LocalWeather
                 .where(evt -> evt.getTemperature() >= 41.0f)
                 .within(Time.days(2));
     }
+
+    @Override
+    public Class<ExcessiveHeatWarning> getWarningTargetType() {
+        return ExcessiveHeatWarning.class;
+    }
 }

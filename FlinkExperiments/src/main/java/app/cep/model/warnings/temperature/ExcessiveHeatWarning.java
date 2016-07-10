@@ -8,13 +8,6 @@ import model.LocalWeatherData;
 
 import java.util.Map;
 
-/**
- * Excessive Heat Warning – Extreme Heat Index (HI) values forecast to meet or exceed locally defined warning criteria for at least two days.
- * Specific criteria varies among local Weather Forecast Offices, due to climate variability and the effect of excessive heat on the local
- * population.
- *
- * Typical HI values are maximum daytime temperatures above 105 to 110 °F (41 to 43 °C) and minimum nighttime temperatures above 75 °F (24 °C).
- */
 public class ExcessiveHeatWarning implements IWarning {
 
     private final LocalWeatherData localWeatherData0;

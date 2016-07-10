@@ -45,4 +45,9 @@ public class ExtremeColdWarningPattern implements IWarningPattern<LocalWeatherDa
                 .where(evt -> evt.getTemperature() <= -46.0f )
                 .within(Time.days(3));
     }
+
+    @Override
+    public Class<ExtremeColdWarning> getWarningTargetType() {
+        return ExtremeColdWarning.class;
+    }
 }

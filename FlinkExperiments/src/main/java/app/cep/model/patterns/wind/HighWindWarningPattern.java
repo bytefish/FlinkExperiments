@@ -30,4 +30,9 @@ public class HighWindWarningPattern implements IWarningPattern<LocalWeatherData,
                 .subtype(LocalWeatherData.class)
                 .where(evt -> evt.getWindSpeed() >= 8 && evt.getWindSpeed() <= 13);
     }
+
+    @Override
+    public Class<HighWindWarning> getWarningTargetType() {
+        return HighWindWarning.class;
+    }
 }

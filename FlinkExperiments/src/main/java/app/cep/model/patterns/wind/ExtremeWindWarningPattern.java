@@ -4,6 +4,7 @@
 package app.cep.model.patterns.wind;
 
 import app.cep.model.IWarningPattern;
+import app.cep.model.warnings.temperature.ExtremeColdWarning;
 import app.cep.model.warnings.wind.ExtremeWindWarning;
 import model.LocalWeatherData;
 import org.apache.flink.cep.pattern.Pattern;
@@ -29,5 +30,10 @@ public class ExtremeWindWarningPattern implements IWarningPattern<LocalWeatherDa
                 .<LocalWeatherData>begin("First Event")
                 .subtype(LocalWeatherData.class)
                 .where(evt -> evt.getWindSpeed() > 13);
+    }
+
+    @Override
+    public Class<ExtremeWindWarning> getWarningTargetType() {
+        return ExtremeWindWarning.class;
     }
 }

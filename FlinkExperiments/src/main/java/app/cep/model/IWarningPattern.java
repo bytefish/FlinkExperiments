@@ -6,6 +6,7 @@ package app.cep.model;
 import org.apache.flink.cep.pattern.Pattern;
 
 import java.io.Serializable;
+import java.lang.reflect.Type;
 import java.util.Map;
 
 /**
@@ -17,7 +18,7 @@ import java.util.Map;
 public interface IWarningPattern<TEventType, TWarningType extends IWarning> extends Serializable {
 
     /**
-     * Implementes the mapping between the pattern matching result and the warning.
+     * Implements the mapping between the pattern matching result and the warning.
      *
      * @param pattern Pattern, which has been matched by Apache Flink.
      * @return The warning created from the given match result.
@@ -30,5 +31,12 @@ public interface IWarningPattern<TEventType, TWarningType extends IWarning> exte
      * @return The Apache Flink CEP Pattern definition.
      */
     Pattern<TEventType, ?> getEventPattern();
+
+    /**
+     * Returns the Warning Class for simplifying reflection.
+     *
+     * @return Class Type of the Warning.
+     */
+    Class<TWarningType> getWarningTargetType();
 
 }

@@ -3,11 +3,14 @@
 
 package app.cep;
 
-import app.cep.model.patterns.temperature.ExcessiveHeatWarningPattern;
-import app.cep.model.warnings.temperature.ExcessiveHeatWarning;
+import app.cep.model.IWarning;
+import app.cep.model.IWarningPattern;
+import app.cep.model.patterns.temperature.SevereHeatWarningPattern;
+import app.cep.model.warnings.temperature.SevereHeatWarning;
 import model.LocalWeatherData;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.java.functions.KeySelector;
+import org.apache.flink.api.java.typeutils.GenericTypeInfo;
 import org.apache.flink.cep.CEP;
 import org.apache.flink.cep.PatternSelectFunction;
 import org.apache.flink.cep.PatternStream;
@@ -78,28 +81,35 @@ public class WeatherDataComplexEventProcessingExample {
                         // And use the maximum temperature:
                         .maxBy("temperature");
 
-        // Example Excessive Heat Warning:
-        final ExcessiveHeatWarningPattern pattern = new ExcessiveHeatWarningPattern();
+        // Now apply the SevereHeatWarningPattern on the Stream:
+        DataStream<SevereHeatWarning> warnings =  toWarningStream(maxTemperaturePerDay, new SevereHeatWarningPattern());
 
-        PatternStream<LocalWeatherData> tempPatternStream = CEP.pattern(
-                maxTemperaturePerDay.keyBy(new KeySelector<LocalWeatherData, String>() {
-                    @Override
-                    public String getKey(LocalWeatherData localWeatherData) throws Exception {
-                        return localWeatherData.getStation().getWban();
-                    }
-                }),
-                pattern.getEventPattern());
-
-        DataStream<ExcessiveHeatWarning> warnings = tempPatternStream.select(new PatternSelectFunction<LocalWeatherData, ExcessiveHeatWarning>() {
-            @Override
-            public ExcessiveHeatWarning select(Map<String, LocalWeatherData> map) throws Exception {
-                return pattern.create(map);
-            }
-        });
-
+        // Print the warning to the Console for now:
         warnings.print();
 
        // Finally execute the Stream:
         env.execute("CEP Weather Warning Example");
     }
+
+    // Generic attempt for generating the Stream of Weather Warnings:
+    private static <TWarningType extends IWarning> DataStream<TWarningType>  toWarningStream(DataStream<LocalWeatherData> localWeatherDataDataStream, IWarningPattern<LocalWeatherData, TWarningType> warningPattern) {
+        PatternStream<LocalWeatherData> tempPatternStream = CEP.pattern(
+                localWeatherDataDataStream.keyBy(new KeySelector<LocalWeatherData, String>() {
+                    @Override
+                    public String getKey(LocalWeatherData localWeatherData) throws Exception {
+                        return localWeatherData.getStation().getWban();
+                    }
+                }),
+                warningPattern.getEventPattern());
+
+        DataStream<TWarningType> warnings = tempPatternStream.select(new PatternSelectFunction<LocalWeatherData, TWarningType>() {
+            @Override
+            public TWarningType select(Map<String, LocalWeatherData> map) throws Exception {
+                return warningPattern.create(map);
+            }
+        }, new GenericTypeInfo<TWarningType>(warningPattern.getWarningTargetType()));
+
+        return warnings;
+    }
+
 }

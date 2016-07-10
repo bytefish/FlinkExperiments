@@ -5,21 +5,15 @@ package app.cep.model.warnings.temperature;
 
 import app.cep.model.IWarning;
 import model.LocalWeatherData;
-import org.apache.flink.cep.pattern.Pattern;
-import org.apache.flink.streaming.api.windowing.time.Time;
 
-import java.util.Map;
-
-public class ExtremeColdWarning implements IWarning {
+public class SevereHeatWarning implements IWarning {
 
     private final LocalWeatherData localWeatherData0;
     private final LocalWeatherData localWeatherData1;
-    private final LocalWeatherData localWeatherData2;
 
-    public ExtremeColdWarning(LocalWeatherData localWeatherData0, LocalWeatherData localWeatherData1, LocalWeatherData localWeatherData2) {
+    public SevereHeatWarning(LocalWeatherData localWeatherData0, LocalWeatherData localWeatherData1) {
         this.localWeatherData0 = localWeatherData0;
         this.localWeatherData1 = localWeatherData1;
-        this.localWeatherData2 = localWeatherData2;
     }
 
     public LocalWeatherData getLocalWeatherData0() {
@@ -30,13 +24,9 @@ public class ExtremeColdWarning implements IWarning {
         return localWeatherData1;
     }
 
-    public LocalWeatherData getLocalWeatherData2() {
-        return localWeatherData2;
-    }
-
     @Override
     public String toString() {
-        return String.format("ExtremeColdWarning (WBAN = %s, First Measurement = (%s), Second Measurement = (%s))",
+        return String.format("SevereHeatWarning (WBAN = %s, First Measurement = (%s), Second Measurement = (%s))",
                 localWeatherData0.getStation().getWban(),
                 getEventSummary(localWeatherData0),
                 getEventSummary(localWeatherData1));
@@ -47,5 +37,4 @@ public class ExtremeColdWarning implements IWarning {
         return String.format("Date = %s, Time = %s, Temperature = %f",
                 localWeatherData.getDate(), localWeatherData.getTime(), localWeatherData.getTemperature());
     }
-
 }
