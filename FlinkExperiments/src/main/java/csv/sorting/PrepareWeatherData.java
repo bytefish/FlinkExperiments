@@ -64,7 +64,7 @@ public class PrepareWeatherData {
                         // Get the matching station:
                         csv.model.Station station = stationMap.get(x.getRight().getWban());
                         // Calculate the OffsetDateTime from the given measurement:
-                        OffsetDateTime measurementTime = OffsetDateTime.of(x.getRight().getDate(), x.getRight().getTime(), ZoneOffset.ofHours(station.getTimeZone()));
+                        OffsetDateTime measurementTime = OffsetDateTime.of(x.getRight().getDate(), x.getRight().getTime(), ZoneOffset.ofHours(0));
                         // Build the Immutable pair with the Index again:
                         return new ImmutablePair<>(x.getLeft(), measurementTime);
                     })

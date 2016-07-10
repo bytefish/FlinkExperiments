@@ -47,7 +47,7 @@ public class WeatherDataComplexEventProcessingExample {
                 .assignTimestampsAndWatermarks(new AscendingTimestampExtractor<LocalWeatherData>() {
                     @Override
                     public long extractAscendingTimestamp(LocalWeatherData localWeatherData) {
-                        Date measurementTime = DateUtilities.from(localWeatherData.getDate(), localWeatherData.getTime(), ZoneOffset.ofHours(localWeatherData.getStation().getTimeZone()));
+                        Date measurementTime = DateUtilities.from(localWeatherData.getDate(), localWeatherData.getTime(), ZoneOffset.ofHours(0));
 
                         return measurementTime.getTime();
                     }
