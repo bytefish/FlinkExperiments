@@ -3,8 +3,6 @@
 
 package app.cep.model;
 
-import java.lang.reflect.Type;
-
 /**
  * Marker interface used for Warnings.
  */

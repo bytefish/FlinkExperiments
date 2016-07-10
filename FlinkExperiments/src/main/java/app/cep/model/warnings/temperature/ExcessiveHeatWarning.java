@@ -6,8 +6,6 @@ package app.cep.model.warnings.temperature;
 import app.cep.model.IWarning;
 import model.LocalWeatherData;
 
-import java.util.Map;
-
 public class ExcessiveHeatWarning implements IWarning {
 
     private final LocalWeatherData localWeatherData0;

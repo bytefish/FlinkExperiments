@@ -6,7 +6,6 @@ package app.cep.model;
 import org.apache.flink.cep.pattern.Pattern;
 
 import java.io.Serializable;
-import java.lang.reflect.Type;
 import java.util.Map;
 
 /**

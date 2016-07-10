@@ -91,8 +91,7 @@ public class WeatherDataComplexEventProcessingExample {
         env.execute("CEP Weather Warning Example");
     }
 
-    // Generic attempt for generating the Stream of Weather Warnings:
-    private static <TWarningType extends IWarning> DataStream<TWarningType>  toWarningStream(DataStream<LocalWeatherData> localWeatherDataDataStream, IWarningPattern<LocalWeatherData, TWarningType> warningPattern) {
+    private static <TWarningType extends IWarning> DataStream<TWarningType> toWarningStream(DataStream<LocalWeatherData> localWeatherDataDataStream, IWarningPattern<LocalWeatherData, TWarningType> warningPattern) {
         PatternStream<LocalWeatherData> tempPatternStream = CEP.pattern(
                 localWeatherDataDataStream.keyBy(new KeySelector<LocalWeatherData, String>() {
                     @Override
