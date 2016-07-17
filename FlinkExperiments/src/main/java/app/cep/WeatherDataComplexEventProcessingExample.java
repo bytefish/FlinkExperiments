@@ -55,7 +55,7 @@ public class WeatherDataComplexEventProcessingExample {
 
         // First build a KeyedStream over the Data with LocalWeather:
         KeyedStream<LocalWeatherData, String> localWeatherDataByStation = localWeatherDataDataStream
-                // Filte for Non-Null Temperature Values, because we might have missing data:
+                // Filter for Non-Null Temperature Values, because we might have missing data:
                 .filter(new FilterFunction<LocalWeatherData>() {
                     @Override
                     public boolean filter(LocalWeatherData localWeatherData) throws Exception {
