@@ -34,10 +34,8 @@ public class ExcessiveHeatWarningPattern implements IWarningPattern<LocalWeather
     public Pattern<LocalWeatherData, ?> getEventPattern() {
         return Pattern
                 .<LocalWeatherData>begin("First Event")
-                .subtype(LocalWeatherData.class)
                 .where(evt -> evt.getTemperature() >= 41.0f)
                 .next("Second Event")
-                .subtype(LocalWeatherData.class)
                 .where(evt -> evt.getTemperature() >= 41.0f)
                 .within(Time.days(2));
     }

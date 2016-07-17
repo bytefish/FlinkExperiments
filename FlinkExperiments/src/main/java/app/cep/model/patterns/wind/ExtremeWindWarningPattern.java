@@ -28,7 +28,6 @@ public class ExtremeWindWarningPattern implements IWarningPattern<LocalWeatherDa
     public Pattern<LocalWeatherData, ?> getEventPattern() {
         return Pattern
                 .<LocalWeatherData>begin("First Event")
-                .subtype(LocalWeatherData.class)
                 .where(evt -> evt.getWindSpeed() > 110);
     }
 

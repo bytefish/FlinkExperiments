@@ -30,9 +30,6 @@ public class WeatherDataStreamingExample {
         // Use the Measurement Timestamp of the Event:
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
-        // We are sequentially reading the historic data from a CSV file:
-        env.setParallelism(1);
-
         // Path to read the CSV data from:
         final String csvStationDataFilePath = "C:\\Users\\philipp\\Downloads\\csv\\201503station.txt";
         final String csvLocalWeatherDataFilePath = "C:\\Users\\philipp\\Downloads\\csv\\201503hourly_sorted.txt";

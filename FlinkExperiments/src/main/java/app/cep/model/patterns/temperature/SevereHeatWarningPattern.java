@@ -28,10 +28,8 @@ public class SevereHeatWarningPattern implements IWarningPattern<LocalWeatherDat
     public Pattern<LocalWeatherData, ?> getEventPattern() {
         return Pattern
                 .<LocalWeatherData>begin("First Event")
-                .subtype(LocalWeatherData.class)
                 .where(evt -> evt.getTemperature() >= 30.0f)
                 .next("Second Event")
-                .subtype(LocalWeatherData.class)
                 .where(evt -> evt.getTemperature() >= 30.0f)
                 .within(Time.days(2));
     }

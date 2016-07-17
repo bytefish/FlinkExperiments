@@ -35,13 +35,10 @@ public class ExtremeColdWarningPattern implements IWarningPattern<LocalWeatherDa
     public Pattern<LocalWeatherData, ?> getEventPattern() {
         return Pattern
                 .<LocalWeatherData>begin("First Event")
-                .subtype(LocalWeatherData.class)
                 .where(evt -> evt.getTemperature() <= -46.0f)
                 .next("Second Event")
-                .subtype(LocalWeatherData.class)
                 .where(evt -> evt.getTemperature() <= -46.0f)
                 .next("Third Event")
-                .subtype(LocalWeatherData.class)
                 .where(evt -> evt.getTemperature() <= -46.0f )
                 .within(Time.days(3));
     }

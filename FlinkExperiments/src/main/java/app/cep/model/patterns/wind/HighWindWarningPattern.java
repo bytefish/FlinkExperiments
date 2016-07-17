@@ -27,7 +27,6 @@ public class HighWindWarningPattern implements IWarningPattern<LocalWeatherData,
     public Pattern<LocalWeatherData, ?> getEventPattern() {
         return Pattern
                 .<LocalWeatherData>begin("First Event")
-                .subtype(LocalWeatherData.class)
                 .where(evt -> evt.getWindSpeed() >= 39 && evt.getWindSpeed() <= 110);
     }
 
