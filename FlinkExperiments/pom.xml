@@ -23,22 +23,13 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <flink.version>1.1-SNAPSHOT</flink.version>
-    </properties>
+        <flink.version>1.1.2</flink.version>
 
-    <repositories>
-        <repository>
-            <id>apache.snapshots</id>
-            <name>Apache Development Snapshot Repository</name>
-            <url>https://repository.apache.org/content/repositories/snapshots/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
+        <pgbulkinsert.version>1.1</pgbulkinsert.version>
+        <jtinycsvparser.version>1.2</jtinycsvparser.version>
+        <elasticutils.version>0.3</elasticutils.version>
+
+    </properties>
 
     <dependencies>
 
@@ -69,7 +60,7 @@
         <dependency>
             <groupId>de.bytefish</groupId>
             <artifactId>jtinycsvparser</artifactId>
-            <version>1.2</version>
+            <version>${jtinycsvparser.version}</version>
         </dependency>
 
         <dependency>
@@ -93,13 +84,13 @@
         <dependency>
             <groupId>de.bytefish</groupId>
             <artifactId>elasticutils</artifactId>
-            <version>0.3</version>
+            <version>${elasticutils.version}</version>
         </dependency>
 
         <dependency>
             <groupId>de.bytefish</groupId>
             <artifactId>pgbulkinsert</artifactId>
-            <version>0.9</version>
+            <version>${pgbulkinsert.version}</version>
         </dependency>
 
         <dependency>
