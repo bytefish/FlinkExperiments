@@ -18,6 +18,16 @@ The data is available at:
 
 * [http://www.ncdc.noaa.gov/orders/qclcd/](http://www.ncdc.noaa.gov/orders/qclcd/)
 
+## Running the Examples ##
+
+The records in the [Quality Controlled Local Climatological Data (QCLCD)] dataset are not sorted by the timestamp. The dataset needs to be prepared first, so that all records are sorted ascending by the time of measurement.
+
+I have written a small application, that sorts the original CSV data by the measurement time:
+
+* [PrepareWeatherData.java](https://github.com/bytefish/FlinkExperiments/blob/master/FlinkExperiments/src/main/java/csv/sorting/PrepareWeatherData.java)
+
+The result is a sorted CSV file, which can be used to run the examples.
+
 [Apache Flink]: https://flink.apache.org
 [Elasticsearch]: https://www.elastic.co/products/elasticsearch 
 [PostgreSQL]: https://www.postgresql.org
