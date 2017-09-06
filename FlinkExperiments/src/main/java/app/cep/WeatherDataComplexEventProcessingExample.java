@@ -38,8 +38,8 @@ public class WeatherDataComplexEventProcessingExample {
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
         // Path to read the CSV data from:
-        final String csvStationDataFilePath = "C:\\Users\\philipp\\Downloads\\csv\\201503station.txt";
-        final String csvLocalWeatherDataFilePath = "C:\\Users\\philipp\\Downloads\\csv\\201503hourly_sorted.txt";
+        final String csvStationDataFilePath = "/Users/sklard/Downloads/QCLCD201708/201708station.txt";
+        final String csvLocalWeatherDataFilePath = "/Users/sklard/Downloads/QCLCD201708/201708hourly_sorted.txt";
 
 
         // Add the CSV Data Source and assign the Measurement Timestamp:

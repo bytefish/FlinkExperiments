@@ -39,7 +39,11 @@ public class Station {
     }
 
     public String getWban() {
-        return wban;
+        if (wban.equalsIgnoreCase("")) {
+            return "WMO:" + wmo;  // Recent weather-service data has some cases where WBAN is empty
+        } else {
+            return wban;
+        }
     }
 
     public void setWban(String wban) {
