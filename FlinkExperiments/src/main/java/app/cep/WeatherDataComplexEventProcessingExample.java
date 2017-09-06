@@ -26,6 +26,7 @@ import utils.DateUtilities;
 import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.Map;
+import java.util.List;
 
 public class WeatherDataComplexEventProcessingExample {
 
@@ -100,7 +101,7 @@ public class WeatherDataComplexEventProcessingExample {
 
         DataStream<TWarningType> warnings = tempPatternStream.select(new PatternSelectFunction<LocalWeatherData, TWarningType>() {
             @Override
-            public TWarningType select(Map<String, LocalWeatherData> map) throws Exception {
+            public TWarningType select(Map<String, List<LocalWeatherData>> map) throws Exception {
                 return warningPattern.create(map);
             }
         }, new GenericTypeInfo<TWarningType>(warningPattern.getWarningTargetType()));

@@ -7,6 +7,7 @@ import org.apache.flink.cep.pattern.Pattern;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.List;
 
 /**
  * A Warning Pattern describes the pattern of a Warning, which is triggered by an Event.
@@ -22,7 +23,7 @@ public interface IWarningPattern<TEventType, TWarningType extends IWarning> exte
      * @param pattern Pattern, which has been matched by Apache Flink.
      * @return The warning created from the given match result.
      */
-    TWarningType create(Map<String, TEventType> pattern);
+    TWarningType create(Map<String, List<TEventType>> pattern);
 
     /**
      * Implementes the Apache Flink CEP Event Pattern which triggers a warning.
