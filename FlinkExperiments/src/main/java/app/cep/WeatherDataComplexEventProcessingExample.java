@@ -11,6 +11,7 @@ import model.LocalWeatherData;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.api.java.typeutils.GenericTypeInfo;
+import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.cep.CEP;
 import org.apache.flink.cep.PatternSelectFunction;
 import org.apache.flink.cep.PatternStream;
@@ -26,10 +27,16 @@ import utils.DateUtilities;
 import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.Map;
+import java.util.List;
 
+/*
+IMPORTANT:  This example activates only the SevereHeatWarning.
+ */
 public class WeatherDataComplexEventProcessingExample {
 
     public static void main(String[] args) throws Exception {
+
+        ParameterTool argParameters = ParameterTool.fromArgs(args);
 
         final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
@@ -37,8 +44,8 @@ public class WeatherDataComplexEventProcessingExample {
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
         // Path to read the CSV data from:
-        final String csvStationDataFilePath = "C:\\Users\\philipp\\Downloads\\csv\\201503station.txt";
-        final String csvLocalWeatherDataFilePath = "C:\\Users\\philipp\\Downloads\\csv\\201503hourly_sorted.txt";
+        final String csvStationDataFilePath = argParameters.getRequired("stationdata");
+        final String csvLocalWeatherDataFilePath = argParameters.getRequired("weatherdata");
 
 
         // Add the CSV Data Source and assign the Measurement Timestamp:
@@ -100,7 +107,7 @@ public class WeatherDataComplexEventProcessingExample {
 
         DataStream<TWarningType> warnings = tempPatternStream.select(new PatternSelectFunction<LocalWeatherData, TWarningType>() {
             @Override
-            public TWarningType select(Map<String, LocalWeatherData> map) throws Exception {
+            public TWarningType select(Map<String, List<LocalWeatherData>> map) throws Exception {
                 return warningPattern.create(map);
             }
         }, new GenericTypeInfo<TWarningType>(warningPattern.getWarningTargetType()));

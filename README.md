@@ -6,6 +6,8 @@ This project is a sample project for [Apache Flink]. The application parses the 
 March 2015, calculates the maximum daily temperature of the stream by using [Apache Flink] and writes the results back into an [Elasticsearch] 
 and [PostgreSQL] database.
 
+Requires flink 1.3.2.
+
 ## Dataset ##
 
 The data is the [Quality Controlled Local Climatological Data (QCLCD)]: 
@@ -27,6 +29,11 @@ I have written a small application, that sorts the original CSV data by the meas
 * [PrepareWeatherData.java](https://github.com/bytefish/FlinkExperiments/blob/master/FlinkExperiments/src/main/java/csv/sorting/PrepareWeatherData.java)
 
 The result is a sorted CSV file, which can be used to run the examples.
+
+Command line parameters are required to run the `WeatherDataComplexEventProcessingExample` example, which looks for only severe-heat temperature conditions::
+* `--stationdata <fullpath>`
+* `--weatherdata <fullpath>`
+
 
 ## Further Reading ##
 

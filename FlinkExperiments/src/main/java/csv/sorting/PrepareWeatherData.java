@@ -28,9 +28,9 @@ public class PrepareWeatherData {
     public static void main(String[] args) throws Exception {
 
         // Path to read the CSV data from:
-        final Path csvStationDataFilePath = FileSystems.getDefault().getPath("C:\\Users\\philipp\\Downloads\\csv\\201503station.txt");
-        final Path csvLocalWeatherDataUnsortedFilePath = FileSystems.getDefault().getPath("C:\\Users\\philipp\\Downloads\\csv\\201503hourly.txt");
-        final Path csvLocalWeatherDataSortedFilePath = FileSystems.getDefault().getPath("C:\\Users\\philipp\\Downloads\\csv\\201503hourly_sorted.txt");
+        final Path csvStationDataFilePath = FileSystems.getDefault().getPath("/Users/sklard/Downloads/QCLCD201708/201708station.txt");
+        final Path csvLocalWeatherDataUnsortedFilePath = FileSystems.getDefault().getPath("/Users/sklard/Downloads/QCLCD201708/201708hourly.txt");
+        final Path csvLocalWeatherDataSortedFilePath = FileSystems.getDefault().getPath("/Users/sklard/Downloads/QCLCD201708/201708hourly_sorted.txt");
 
         // A map between the WBAN and Station for faster Lookups:
         final Map<String, Station> stationMap = getStationMap(csvStationDataFilePath);

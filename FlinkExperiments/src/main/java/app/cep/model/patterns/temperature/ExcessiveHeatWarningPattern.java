@@ -9,7 +9,14 @@ import model.LocalWeatherData;
 import org.apache.flink.cep.pattern.Pattern;
 import org.apache.flink.streaming.api.windowing.time.Time;
 
+import org.apache.flink.cep.CEP.*;
+import org.apache.flink.cep.*;
+import org.apache.flink.cep.pattern.Pattern;
+import org.apache.flink.cep.pattern.conditions.*;
+
+
 import java.util.Map;
+import java.util.List;
 
 /**
  * Excessive Heat Warning – Extreme Heat Index (HI) values forecast to meet or exceed locally defined warning criteria for at least two days.
@@ -23,20 +30,31 @@ public class ExcessiveHeatWarningPattern implements IWarningPattern<LocalWeather
     public ExcessiveHeatWarningPattern() {}
 
     @Override
-    public ExcessiveHeatWarning create(Map<String, LocalWeatherData> pattern) {
-        LocalWeatherData first = pattern.get("First Event");
-        LocalWeatherData second = pattern.get("Second Event");
+    public ExcessiveHeatWarning create(Map<String, List<LocalWeatherData>> pattern) {
+        LocalWeatherData first = pattern.get("First Event").get(0);
+        LocalWeatherData second = pattern.get("Second Event").get(0);
 
         return new ExcessiveHeatWarning(first, second);
     }
 
+
+
     @Override
     public Pattern<LocalWeatherData, ?> getEventPattern() {
+
+        SimpleCondition<LocalWeatherData> checkIsAnomaly =
+                new SimpleCondition<LocalWeatherData>() {
+                    @Override
+                    public boolean filter(LocalWeatherData value) throws Exception {
+                        return value.getTemperature() >= 41.0f;
+                    }
+                };
+
         return Pattern
                 .<LocalWeatherData>begin("First Event")
-                .where(evt -> evt.getTemperature() >= 41.0f)
+                .where(checkIsAnomaly)
                 .next("Second Event")
-                .where(evt -> evt.getTemperature() >= 41.0f)
+                .where(checkIsAnomaly)
                 .within(Time.days(2));
     }
 
