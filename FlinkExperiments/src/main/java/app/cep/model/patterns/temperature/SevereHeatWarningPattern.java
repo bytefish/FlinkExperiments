@@ -18,11 +18,25 @@ public class SevereHeatWarningPattern implements IWarningPattern<LocalWeatherDat
     public SevereHeatWarningPattern() {}
 
     @Override
-    public SevereHeatWarning create(Map<String, List<LocalWeatherData>> pattern) {
-        LocalWeatherData first = pattern.get("First Event").get(0);
-        LocalWeatherData second = pattern.get("Second Event").get(0);
+    /*
+    To enable assert checks at runtime, use --ea
 
-        return new SevereHeatWarning(first, second);
+    TO: Philipp Wagner
+    FROM: DFSklar
+    Under normal conditions, each of the patterns comes in with only one LocalWeatherData record.
+    I have never encountered a case, when testing with the real-world weather-service data,
+    in which more than one is present, thus the asserts below.
+    However, I am looking for suggestions from you re: what should be done if multiple instances
+    of LocalWeatherData are present for a single "event".
+    I have added the asserts only to this particular WarningPattern (severe heat) but
+    obviously the decision we make here must be brought over to the other patterns in this app.
+    */
+    public SevereHeatWarning create(Map<String, List<LocalWeatherData>> pattern) {
+        List<LocalWeatherData> first = pattern.get("First Event");
+        assert(first.size() == 1);   // See comment above
+        List<LocalWeatherData> second = pattern.get("Second Event");
+        assert(second.size() == 1);   // See comment above
+        return new SevereHeatWarning(first.get(0), second.get(0));
     }
 
     @Override

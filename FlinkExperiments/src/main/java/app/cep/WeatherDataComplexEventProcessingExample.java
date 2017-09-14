@@ -29,6 +29,9 @@ import java.util.Date;
 import java.util.Map;
 import java.util.List;
 
+/*
+IMPORTANT:  This example activates only the SevereHeatWarning.
+ */
 public class WeatherDataComplexEventProcessingExample {
 
     public static void main(String[] args) throws Exception {
