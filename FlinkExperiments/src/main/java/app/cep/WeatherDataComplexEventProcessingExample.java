@@ -11,6 +11,7 @@ import model.LocalWeatherData;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.api.java.typeutils.GenericTypeInfo;
+import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.cep.CEP;
 import org.apache.flink.cep.PatternSelectFunction;
 import org.apache.flink.cep.PatternStream;
@@ -32,14 +33,16 @@ public class WeatherDataComplexEventProcessingExample {
 
     public static void main(String[] args) throws Exception {
 
+        ParameterTool argParameters = ParameterTool.fromArgs(args);
+
         final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
         // Use the Measurement Timestamp of the Event:
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
         // Path to read the CSV data from:
-        final String csvStationDataFilePath = "/Users/sklard/Downloads/QCLCD201708/201708station.txt";
-        final String csvLocalWeatherDataFilePath = "/Users/sklard/Downloads/QCLCD201708/201708hourly_sorted.txt";
+        final String csvStationDataFilePath = argParameters.getRequired("stationdata");
+        final String csvLocalWeatherDataFilePath = argParameters.getRequired("weatherdata");
 
 
         // Add the CSV Data Source and assign the Measurement Timestamp:

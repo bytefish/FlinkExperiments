@@ -8,6 +8,7 @@ import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.streaming.api.TimeCharacteristic;
+import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -25,14 +26,16 @@ public class WeatherDataStreamingExample {
 
     public static void main(String[] args) throws Exception {
 
+        ParameterTool argParameters = ParameterTool.fromArgs(args);
+
         final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
         // Use the Measurement Timestamp of the Event:
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
         // Path to read the CSV data from:
-        final String csvStationDataFilePath = "C:\\Users\\philipp\\Downloads\\csv\\201503station.txt";
-        final String csvLocalWeatherDataFilePath = "C:\\Users\\philipp\\Downloads\\csv\\201503hourly_sorted.txt";
+        final String csvStationDataFilePath = argParameters.getRequired("stationdata"); //"C:\\Users\\philipp\\Downloads\\csv\\201503station.txt";
+        final String csvLocalWeatherDataFilePath = argParameters.getRequired("weatherdata");  //"C:\\Users\\philipp\\Downloads\\csv\\201503hourly_sorted.txt";
 
         // Add the CSV Data Source and assign the Measurement Timestamp:
         DataStream<model.LocalWeatherData> localWeatherDataDataStream = env
@@ -41,7 +44,6 @@ public class WeatherDataStreamingExample {
                     @Override
                     public long extractAscendingTimestamp(LocalWeatherData localWeatherData) {
                         Date measurementTime = DateUtilities.from(localWeatherData.getDate(), localWeatherData.getTime(), ZoneOffset.ofHours(0));
-
                         return measurementTime.getTime();
                     }
                 });
