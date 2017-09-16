@@ -3,12 +3,12 @@
 
 package stream.sinks.elastic;
 
-import de.bytefish.elasticutils.client.ElasticSearchClient;
 import de.bytefish.elasticutils.client.IElasticSearchClient;
-import de.bytefish.elasticutils.client.bulk.configuration.BulkProcessorConfiguration;
-import de.bytefish.elasticutils.client.bulk.options.BulkProcessingOptions;
-import de.bytefish.elasticutils.mapping.IElasticSearchMapping;
-import de.bytefish.elasticutils.utils.ElasticSearchUtils;
+import de.bytefish.elasticutils.elasticsearch2.client.ElasticSearchClient;
+import de.bytefish.elasticutils.elasticsearch2.client.bulk.configuration.BulkProcessorConfiguration;
+import de.bytefish.elasticutils.elasticsearch2.client.bulk.options.BulkProcessingOptions;
+import de.bytefish.elasticutils.elasticsearch2.mapping.IElasticSearchMapping;
+import de.bytefish.elasticutils.elasticsearch2.utils.ElasticSearchUtils;
 import elastic.mapping.LocalWeatherDataMapper;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;

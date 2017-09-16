@@ -8,7 +8,9 @@ import app.cep.model.warnings.temperature.ExtremeColdWarning;
 import app.cep.model.warnings.wind.ExtremeWindWarning;
 import model.LocalWeatherData;
 import org.apache.flink.cep.pattern.Pattern;
+import org.apache.flink.cep.pattern.conditions.SimpleCondition;
 
+import java.util.List;
 import java.util.Map;
 
 public class ExtremeWindWarningPattern implements IWarningPattern<LocalWeatherData, ExtremeWindWarning> {
@@ -18,8 +20,8 @@ public class ExtremeWindWarningPattern implements IWarningPattern<LocalWeatherDa
     }
 
     @Override
-    public ExtremeWindWarning create(Map<String, LocalWeatherData> pattern) {
-        LocalWeatherData first = pattern.get("First Event");
+    public ExtremeWindWarning create(Map<String, List<LocalWeatherData>> pattern) {
+        LocalWeatherData first = pattern.get("First Event").get(0);
 
         return new ExtremeWindWarning(first);
     }
@@ -27,8 +29,13 @@ public class ExtremeWindWarningPattern implements IWarningPattern<LocalWeatherDa
     @Override
     public Pattern<LocalWeatherData, ?> getEventPattern() {
         return Pattern
-                .<LocalWeatherData>begin("First Event")
-                .where(evt -> evt.getWindSpeed() > 110);
+                .<LocalWeatherData>begin("First Event").where(
+                        new SimpleCondition<LocalWeatherData>() {
+                            @Override
+                            public boolean filter(LocalWeatherData event) throws Exception {
+                                return event.getWindSpeed() > 110;
+                            }
+                        });
     }
 
     @Override

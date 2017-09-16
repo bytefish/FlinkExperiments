@@ -7,8 +7,10 @@ import app.cep.model.IWarningPattern;
 import app.cep.model.warnings.temperature.ExtremeColdWarning;
 import model.LocalWeatherData;
 import org.apache.flink.cep.pattern.Pattern;
+import org.apache.flink.cep.pattern.conditions.SimpleCondition;
 import org.apache.flink.streaming.api.windowing.time.Time;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,10 +25,10 @@ public class ExtremeColdWarningPattern implements IWarningPattern<LocalWeatherDa
     }
 
     @Override
-    public ExtremeColdWarning create(Map<String, LocalWeatherData> pattern) {
-        LocalWeatherData first = (LocalWeatherData) pattern.get("First Event");
-        LocalWeatherData second = (LocalWeatherData) pattern.get("Second Event");
-        LocalWeatherData third = (LocalWeatherData) pattern.get("Third Event");
+    public ExtremeColdWarning create(Map<String, List<LocalWeatherData>> pattern) {
+        LocalWeatherData first = (LocalWeatherData) pattern.get("First Event").get(0);
+        LocalWeatherData second = (LocalWeatherData) pattern.get("Second Event").get(0);
+        LocalWeatherData third = (LocalWeatherData) pattern.get("Third Event").get(0);
 
         return new ExtremeColdWarning(first, second, third);
     }
@@ -34,12 +36,27 @@ public class ExtremeColdWarningPattern implements IWarningPattern<LocalWeatherDa
     @Override
     public Pattern<LocalWeatherData, ?> getEventPattern() {
         return Pattern
-                .<LocalWeatherData>begin("First Event")
-                .where(evt -> evt.getTemperature() <= -46.0f)
-                .next("Second Event")
-                .where(evt -> evt.getTemperature() <= -46.0f)
-                .next("Third Event")
-                .where(evt -> evt.getTemperature() <= -46.0f )
+                .<LocalWeatherData>begin("First Event").where(
+                        new SimpleCondition<LocalWeatherData>() {
+                            @Override
+                            public boolean filter(LocalWeatherData event) throws Exception {
+                                return event.getTemperature() <= -46.0f;
+                            }
+                        })
+                .next("Second Event").where(
+                        new SimpleCondition<LocalWeatherData>() {
+                            @Override
+                            public boolean filter(LocalWeatherData event) throws Exception {
+                                return event.getTemperature() <= -46.0f;
+                            }
+                        })
+                .next("Third Event").where(
+                        new SimpleCondition<LocalWeatherData>() {
+                            @Override
+                            public boolean filter(LocalWeatherData event) throws Exception {
+                                return event.getTemperature() <= -46.0f;
+                            }
+                        })
                 .within(Time.days(3));
     }
 
