@@ -15,7 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * We build a Mock here with Fake Data. This Mock sends predefined Measurements with a 2 Second Interval and
+ * We build a Mock here with Fake Data. This Mock sends predefined Measurements with a 1 Second Interval and
  * emits them to the SourceContext. This is done, so that we can simulate Measurements and check if the Warnings
  * are correctly generated.
  *
