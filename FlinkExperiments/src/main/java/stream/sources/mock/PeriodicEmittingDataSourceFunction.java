@@ -30,7 +30,7 @@ public abstract class PeriodicEmittingDataSourceFunction<TEventType> implements 
                 sourceContext.collect(event);
             }
         });
-        
+
     }
 
     @Override

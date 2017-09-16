@@ -38,11 +38,7 @@ public class WeatherDataComplexEventProcessingExample2 {
         // Use the Measurement Timestamp of the Event:
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
-        // Path to read the CSV data from:
-
-
-
-        // Add the CSV Data Source and assign the Measurement Timestamp:
+        // Add the Data Source and assign the Measurement Timestamp:
         DataStream<LocalWeatherData> localWeatherDataDataStream = env
                 .addSource(new SevereHeatWarningSourceFunction())
                 .assignTimestampsAndWatermarks(new AscendingTimestampExtractor<LocalWeatherData>() {
