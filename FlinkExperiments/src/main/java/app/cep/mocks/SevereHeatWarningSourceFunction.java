@@ -42,7 +42,7 @@ public class SevereHeatWarningSourceFunction extends PeriodicEmittingDataSourceF
     }
 
     @Override
-    protected Duration duration() {
+    protected Duration interval() {
         return Duration.ofSeconds(1);
     }
 }

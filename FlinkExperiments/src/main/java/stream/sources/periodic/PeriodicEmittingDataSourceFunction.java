@@ -32,7 +32,7 @@ public abstract class PeriodicEmittingDataSourceFunction<TEventType> implements 
                 // We zip two Streams: The Iterable and an Interval emitting data stream:
                 .zip(
                         Observable.fromIterable(iterable()),
-                        Observable.interval(duration().toMillis(), TimeUnit.MILLISECONDS),
+                        Observable.interval(interval().toMillis(), TimeUnit.MILLISECONDS),
                         new BiFunction<TEventType, Long, TEventType>() {
                             @Override
                             public TEventType apply(@NonNull TEventType obs, @NonNull Long timer) throws Exception {
@@ -65,5 +65,5 @@ public abstract class PeriodicEmittingDataSourceFunction<TEventType> implements 
 
     protected abstract Iterable<TEventType> iterable();
 
-    protected abstract Duration duration();
+    protected abstract Duration interval();
 }
