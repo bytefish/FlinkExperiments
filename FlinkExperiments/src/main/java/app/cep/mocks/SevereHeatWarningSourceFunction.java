@@ -6,7 +6,7 @@ package app.cep.mocks;
 import model.GeoLocation;
 import model.LocalWeatherData;
 import model.Station;
-import stream.sources.mock.PeriodicEmittingDataSourceFunction;
+import stream.sources.periodic.PeriodicEmittingDataSourceFunction;
 
 import java.time.Duration;
 import java.time.LocalDate;
