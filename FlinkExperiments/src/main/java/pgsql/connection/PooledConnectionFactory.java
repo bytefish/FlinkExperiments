@@ -3,13 +3,13 @@
 
 package pgsql.connection;
 
-import de.bytefish.pgbulkinsert.functional.Func1;
 import org.apache.commons.dbcp2.BasicDataSource;
 
 import java.net.URI;
 import java.sql.Connection;
+import java.util.function.Supplier;
 
-public class PooledConnectionFactory implements Func1<Connection> {
+public class PooledConnectionFactory implements Supplier<Connection> {
 
     private final BasicDataSource connectionPool;
 
@@ -32,7 +32,11 @@ public class PooledConnectionFactory implements Func1<Connection> {
     }
 
     @Override
-    public Connection invoke() throws Exception {
-        return connectionPool.getConnection();
+    public Connection get() {
+        try {
+            return connectionPool.getConnection();
+        } catch(Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

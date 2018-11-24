@@ -8,6 +8,7 @@ import de.bytefish.pgbulkinsert.pgsql.processor.BulkProcessor;
 import de.bytefish.pgbulkinsert.pgsql.processor.handler.BulkWriteHandler;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
+import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import pgsql.connection.PooledConnectionFactory;
 
 import java.net.URI;
@@ -25,7 +26,7 @@ public abstract class BasePostgresSink<TEntity> extends RichSinkFunction<TEntity
     }
 
     @Override
-    public void invoke(TEntity entity) throws Exception {
+    public void invoke(TEntity entity, SinkFunction.Context context) {
         bulkProcessor.add(entity);
     }
 

@@ -4,6 +4,8 @@
 package stream.sinks.pgsql;
 
 import de.bytefish.pgbulkinsert.IPgBulkInsert;
+import de.bytefish.pgbulkinsert.PgBulkInsert;
+import pgsql.mapping.LocalWeatherDataMapping;
 
 import java.net.URI;
 
@@ -15,7 +17,7 @@ public class LocalWeatherDataPostgresSink extends BasePostgresSink<pgsql.model.L
 
     @Override
     protected IPgBulkInsert<pgsql.model.LocalWeatherData> getBulkInsert() {
-        return new pgsql.mapping.LocalWeatherDataBulkInsert("sample", "weather_data");
+        return new PgBulkInsert<pgsql.model.LocalWeatherData>(new LocalWeatherDataMapping("sample", "weather_data"));
     }
 
 }

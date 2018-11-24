@@ -12,6 +12,7 @@ import de.bytefish.elasticutils.elasticsearch2.utils.ElasticSearchUtils;
 import elastic.mapping.LocalWeatherDataMapper;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
+import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.cluster.node.DiscoveryNode;
@@ -39,7 +40,7 @@ public abstract class BaseElasticSearchSink<TEntity> extends RichSinkFunction<TE
     }
 
     @Override
-    public void invoke(TEntity entity) throws Exception {
+    public void invoke(TEntity entity, SinkFunction.Context context) {
         client.index(entity);
     }
 
