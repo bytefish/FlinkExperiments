@@ -13,6 +13,7 @@ import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.timestamps.AscendingTimestampExtractor;
 import org.apache.flink.streaming.api.windowing.time.Time;
+import stream.sinks.elastic.LocalWeatherDataElasticSearchSink;
 import stream.sinks.pgsql.LocalWeatherDataPostgresSink;
 import stream.sources.csv.LocalWeatherDataSourceFunction;
 import utils.DateUtilities;
@@ -31,8 +32,8 @@ public class WeatherDataStreamingExample {
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
         // Path to read the CSV data from:
-        final String csvStationDataFilePath = "C:\\Users\\philipp\\Downloads\\csv\\201503station.txt";
-        final String csvLocalWeatherDataFilePath = "C:\\Users\\philipp\\Downloads\\csv\\201503hourly_sorted.txt";
+        final String csvStationDataFilePath = "D:\\datasets\\201503station.txt";
+        final String csvLocalWeatherDataFilePath = "D:\\datasets\\201503hourly_sorted.txt";
 
         // Add the CSV Data Source and assign the Measurement Timestamp:
         DataStream<model.LocalWeatherData> localWeatherDataDataStream = env
@@ -91,10 +92,10 @@ public class WeatherDataStreamingExample {
 
 
         // Add a new ElasticSearch Sink:
-        //elasticDailyMaxTemperature.addSink(new LocalWeatherDataElasticSearchSink("127.0.0.1", 9300, 100));
+        elasticDailyMaxTemperature.addSink(new LocalWeatherDataElasticSearchSink("127.0.0.1", 9300, 100));
 
         // Add a new Postgres Sink:
-        pgsqlDailyMaxTemperature.addSink(new LocalWeatherDataPostgresSink(URI.create("postgres://philipp:test_pwd@127.0.0.1:5432/sampledb"), 1000));
+        //pgsqlDailyMaxTemperature.addSink(new LocalWeatherDataPostgresSink(URI.create("postgres://philipp:test_pwd@127.0.0.1:5432/sampledb"), 1000));
 
         // Finally execute the Stream:
         env.execute("Max Temperature By Day example");

@@ -18,6 +18,12 @@ The data is available at:
 
 * [http://www.ncdc.noaa.gov/orders/qclcd/](http://www.ncdc.noaa.gov/orders/qclcd/)
 
+## Result ##
+
+<a href="https://raw.githubusercontent.com/bytefish/FlinkExperiments/master/FlinkExperiments/img/screenshot.jpg">
+	<img src="https://raw.githubusercontent.com/bytefish/FlinkExperiments/master/FlinkExperiments/img/screenshot.jpg" width="50%" height="50%" alt="Kibana Visualization of the Average Temperature" />
+</a>
+
 ## Running the Examples ##
 
 The records in the [Quality Controlled Local Climatological Data (QCLCD)] dataset are not sorted by the timestamp. The dataset needs to be prepared first, so that all records are sorted ascending by the time of measurement.

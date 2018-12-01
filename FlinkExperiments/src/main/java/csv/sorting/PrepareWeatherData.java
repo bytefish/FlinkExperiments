@@ -28,9 +28,9 @@ public class PrepareWeatherData {
     public static void main(String[] args) throws Exception {
 
         // Path to read the CSV data from:
-        final Path csvStationDataFilePath = FileSystems.getDefault().getPath("C:\\Users\\philipp\\Downloads\\csv\\201503station.txt");
-        final Path csvLocalWeatherDataUnsortedFilePath = FileSystems.getDefault().getPath("C:\\Users\\philipp\\Downloads\\csv\\201503hourly.txt");
-        final Path csvLocalWeatherDataSortedFilePath = FileSystems.getDefault().getPath("C:\\Users\\philipp\\Downloads\\csv\\201503hourly_sorted.txt");
+        final Path csvStationDataFilePath = FileSystems.getDefault().getPath("D:\\datasets\\201503station.txt");
+        final Path csvLocalWeatherDataUnsortedFilePath = FileSystems.getDefault().getPath("D:\\Datasets\\201503hourly.txt");
+        final Path csvLocalWeatherDataSortedFilePath = FileSystems.getDefault().getPath("D:\\Datasets\\201503hourly_sorted.txt");
 
         // A map between the WBAN and Station for faster Lookups:
         final Map<String, Station> stationMap = getStationMap(csvStationDataFilePath);
@@ -116,7 +116,12 @@ public class PrepareWeatherData {
     private static Map<String, csv.model.Station> getStationMap(Path path) {
         try (Stream<csv.model.Station> stationStream = getStations(path)) {
             return stationStream
-                    .collect(Collectors.toMap(csv.model.Station::getWban, x -> x));
+                    // Group by WBAN, there are probably faulty entries with duplicate Station IDs:
+                    .collect(Collectors.groupingBy(Station::getWban))
+                    // Turn into a Stream again:
+                    .entrySet().stream()
+                    // Make a best guess and take the first one:
+                    .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue().get(0)));
         }
     }
 }

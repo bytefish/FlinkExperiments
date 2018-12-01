@@ -84,8 +84,14 @@ public class LocalWeatherDataSourceFunction implements SourceFunction<model.Loca
 
     private Map<String, csv.model.Station> getStationMap(Path path) {
         try (Stream<csv.model.Station> stationStream = getStations(path)) {
+
             return stationStream
-                    .collect(Collectors.toMap(csv.model.Station::getWban, x -> x));
+                    // Group by WBAN, there are probably faulty entries with duplicate Station IDs:
+                    .collect(Collectors.groupingBy(x -> x.getWban()))
+                    // Turn into a Stream again:
+                    .entrySet().stream()
+                    // Make a best guess and take the first one:
+                    .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue().get(0)));
         }
     }
 }

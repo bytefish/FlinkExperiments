@@ -3,7 +3,7 @@
 
 package stream.sinks.elastic;
 
-import de.bytefish.elasticutils.elasticsearch2.mapping.IElasticSearchMapping;
+import de.bytefish.elasticutils.elasticsearch6.mapping.IElasticSearchMapping;
 
 public class LocalWeatherDataElasticSearchSink extends BaseElasticSearchSink<elastic.model.LocalWeatherData> {
 

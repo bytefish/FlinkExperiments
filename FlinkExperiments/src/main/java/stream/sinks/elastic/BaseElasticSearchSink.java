@@ -4,20 +4,22 @@
 package stream.sinks.elastic;
 
 import de.bytefish.elasticutils.client.IElasticSearchClient;
-import de.bytefish.elasticutils.elasticsearch2.client.ElasticSearchClient;
-import de.bytefish.elasticutils.elasticsearch2.client.bulk.configuration.BulkProcessorConfiguration;
-import de.bytefish.elasticutils.elasticsearch2.client.bulk.options.BulkProcessingOptions;
-import de.bytefish.elasticutils.elasticsearch2.mapping.IElasticSearchMapping;
-import de.bytefish.elasticutils.elasticsearch2.utils.ElasticSearchUtils;
+import de.bytefish.elasticutils.elasticsearch6.client.ElasticSearchClient;
+import de.bytefish.elasticutils.elasticsearch6.client.bulk.configuration.BulkProcessorConfiguration;
+import de.bytefish.elasticutils.elasticsearch6.client.bulk.options.BulkProcessingOptions;
+import de.bytefish.elasticutils.elasticsearch6.mapping.IElasticSearchMapping;
+import de.bytefish.elasticutils.elasticsearch6.utils.ElasticSearchUtils;
 import elastic.mapping.LocalWeatherDataMapper;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
+import org.elasticsearch.ResourceAlreadyExistsException;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.cluster.node.DiscoveryNode;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.elasticsearch.indices.IndexAlreadyExistsException;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.transport.TransportAddress;
+import org.elasticsearch.transport.client.PreBuiltTransportClient;
 
 import java.net.InetAddress;
 import java.util.List;
@@ -47,6 +49,14 @@ public abstract class BaseElasticSearchSink<TEntity> extends RichSinkFunction<TE
     @Override
     public void open(Configuration parameters) throws Exception {
 
+        // According to [1] we should initialize the TransportClient **before** any Netty-related code is run.
+        // But I simply cannot guarantee it in the current implementation, so I need to resort to a Workaround
+        // setting the System Properties, which doesn't feel right.
+        //
+        // [1]: https://discuss.elastic.co/t/getting-availableprocessors-is-already-set-to-1-rejecting-1-illegalstateexception-exception/103082
+        //
+        System.setProperty("es.set.netty.runtime.available.processors", "false");
+
         // Create the Transport Client:
         TransportClient transportClient = createClient();
 
@@ -73,8 +83,9 @@ public abstract class BaseElasticSearchSink<TEntity> extends RichSinkFunction<TE
     private TransportClient createClient() throws Exception {
 
         // Create a new Connection:
-        TransportClient client = TransportClient.builder().build()
-                .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(host), port));
+        TransportClient client = new PreBuiltTransportClient(Settings.EMPTY);
+
+        client.addTransportAddress(new TransportAddress(InetAddress.getByName(host), port));
 
         // Ensure we have connected nodes:
         List<DiscoveryNode> nodes = client.connectedNodes();
@@ -91,8 +102,11 @@ public abstract class BaseElasticSearchSink<TEntity> extends RichSinkFunction<TE
         try {
             createIndex(client, getIndexName());
             createMapping(client, getIndexName(), getMapping());
-        } catch (IndexAlreadyExistsException e) {
-            // No need to worry. Someone else has already initialized the Elasticsearch database...
+        } catch (ResourceAlreadyExistsException e) {
+            // The Index already exists! We shouldn't exit here, because we can
+            // (more or less) safely assume, that the index has already been
+            // created by some of the other worker processes.
+            System.err.println(e.getMessage());
         }
     }
 
